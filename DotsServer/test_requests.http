@@ -1,0 +1,15 @@
+POST http://localhost:5158/api/game/6ec49f9a-ec88-45f8-962d-a38f42c6f117/make-move
+Content-Type: application/json
+
+{
+  "x": 2,
+  "y": 3
+}
+
+###
+
+POST http://localhost:5158/api/game/new?board-size=6
+
+###
+
+GET http://localhost:5158/api/game/6ec49f9a-ec88-45f8-962d-a38f42c6f117
