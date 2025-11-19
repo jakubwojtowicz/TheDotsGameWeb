@@ -12,4 +12,4 @@ POST http://localhost:5158/api/game/new?board-size=6
 
 ###
 
-GET http://localhost:5158/api/game/6ec49f9a-ec88-45f8-962d-a38f42c6f117
+GET http://localhost:5158/api/game/f3185821-ba44-4fa0-9a44-b0f4db87b0e5

@@ -1,4 +1,5 @@
 using DotsWebApi.Model;
+using DotsWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -29,8 +30,14 @@ public class GameController: ControllerBase
     [HttpPost("{id:guid}/make-move")]
     public ActionResult<GameState> MakeMove(string id, Move move)
     {
-        _ = _gameService.MakeMove(id, move);
-        var aiState = _gameService.MakeAIMove(id);
-        return Ok(aiState);
+        var state = _gameService.MakeMove(id, move);
+        return Ok(state);
+    }
+
+    [HttpPost("{id:guid}/make-ai-move")]
+    public ActionResult<GameState> MakeAIMove(string id)
+    {
+        var state = _gameService.MakeAIMove(id);
+        return Ok(state);
     }
 }

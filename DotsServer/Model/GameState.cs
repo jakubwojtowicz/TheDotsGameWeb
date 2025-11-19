@@ -1,10 +1,12 @@
 using DotsWebApi.Model.Enums;
 namespace DotsWebApi.Model;
+
 public class GameState
 {
     public Player[][] Board { get; }
 
     public Player CurrentPlayer { get; set; } = Player.Human;
+    public GameResult Result { get; set; } = GameResult.Ongoing;
 
     public GameState(int boardSize)
     {
