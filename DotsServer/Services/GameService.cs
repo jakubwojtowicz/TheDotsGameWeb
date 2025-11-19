@@ -38,14 +38,14 @@ public class GameService : IGameService
 
         var state = _games[gameId];
 
-        if(move.X < 0 || move.X >= state.Board.Length || move.Y < 0 || move.Y >= state.Board.Length)
-            throw new InvalidOperationException("Move is out of bounds.");
-        else if(state.Board[move.X][move.Y] != Player.None)
-            throw new InvalidOperationException("Cell is already occupied.");
+        if(state.Result != GameResult.Ongoing)
+            throw new InvalidOperationException("The game has already ended.");
         else if(state.CurrentPlayer != Player.Human)
             throw new InvalidOperationException("It's not the human player's turn.");
-        else if(state.Result != GameResult.Ongoing)
-            throw new InvalidOperationException("The game has already ended.");
+        else if(state.Board[move.X][move.Y] != Player.None)
+            throw new InvalidOperationException("Cell is already occupied.");
+        else if(move.X < 0 || move.X >= state.Board.Length || move.Y < 0 || move.Y >= state.Board.Length)
+            throw new InvalidOperationException("Move is out of bounds.");
 
         state.Board[move.X][move.Y] = Player.Human;
 
@@ -61,10 +61,11 @@ public class GameService : IGameService
 
         var state = _games[gameId];
 
-        if(state.CurrentPlayer != Player.AI)
-            throw new InvalidOperationException("It's not the AI player's turn.");
-        else if(state.Result != GameResult.Ongoing)
+        if(state.Result != GameResult.Ongoing)
             throw new InvalidOperationException("The game has already ended.");
+        else if(state.CurrentPlayer != Player.AI)
+            throw new InvalidOperationException("It's not the AI player's turn.");
+
 
         for(int r = 0; r < state.Board.Length; r++)
         {

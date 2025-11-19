@@ -1,15 +1,19 @@
-POST http://localhost:5158/api/game/6ec49f9a-ec88-45f8-962d-a38f42c6f117/make-move
-Content-Type: application/json
-
-{
-  "x": 2,
-  "y": 3
-}
-
-###
-
 POST http://localhost:5158/api/game/new?board-size=6
 
 ###
 
-GET http://localhost:5158/api/game/f3185821-ba44-4fa0-9a44-b0f4db87b0e5
+GET http://localhost:5158/api/game/a42ac3e8-2f56-4cdc-a4cb-b607e353e448
+
+###
+PUT http://localhost:5158/api/game/65e8e55d-b1cd-42c9-92eb-ba890bdeb6e6/make-move
+Content-Type: application/json
+
+{
+  "x": 1,
+  "y": 0
+}
+###
+
+PUT http://localhost:5158/api/game/65e8e55d-b1cd-42c9-92eb-ba890bdeb6e6/make-ai-move
+
+

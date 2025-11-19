@@ -27,14 +27,14 @@ public class GameController: ControllerBase
         return Ok(state);
     }
 
-    [HttpPost("{id:guid}/make-move")]
+    [HttpPut("{id:guid}/make-move")]
     public ActionResult<GameState> MakeMove(string id, Move move)
     {
         var state = _gameService.MakeMove(id, move);
         return Ok(state);
     }
 
-    [HttpPost("{id:guid}/make-ai-move")]
+    [HttpPut("{id:guid}/make-ai-move")]
     public ActionResult<GameState> MakeAIMove(string id)
     {
         var state = _gameService.MakeAIMove(id);
