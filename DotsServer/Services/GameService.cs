@@ -1,7 +1,6 @@
 using DotsWebApi.Exceptions;
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
-
 namespace DotsWebApi.Services;
 
 public interface IGameService
@@ -17,6 +16,9 @@ public class GameService : IGameService
     private readonly Dictionary<string, GameState> _games = new();
     public string CreateGame(int boardSize)
     {
+        if(boardSize <= 0 || boardSize > 100)
+            throw new InvalidOperationException("Board size must be between 1 and 100.");
+
         string gameId = Guid.NewGuid().ToString();
         _games[gameId] = new GameState(boardSize);
 
@@ -65,7 +67,6 @@ public class GameService : IGameService
             throw new InvalidOperationException("The game has already ended.");
         else if(state.CurrentPlayer != Player.AI)
             throw new InvalidOperationException("It's not the AI player's turn.");
-
 
         for(int r = 0; r < state.Board.Length; r++)
         {

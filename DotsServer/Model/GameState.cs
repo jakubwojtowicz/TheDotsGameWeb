@@ -4,7 +4,6 @@ namespace DotsWebApi.Model;
 public class GameState
 {
     public Player[][] Board { get; }
-
     public Player CurrentPlayer { get; set; } = Player.Human;
     public GameResult Result { get; set; } = GameResult.Ongoing;
     public int HumanScore { get; set; } = 0;

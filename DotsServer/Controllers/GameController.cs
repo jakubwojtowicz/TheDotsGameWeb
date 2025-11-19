@@ -3,7 +3,7 @@ using DotsWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/game")]
 public class GameController: ControllerBase
 {
     IGameService _gameService;
