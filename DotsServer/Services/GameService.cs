@@ -5,7 +5,7 @@ namespace DotsWebApi.Services;
 
 public interface IGameService
 {
-    string CreateGame(int boardSize);
+    string CreateGame(int boardSize, Player startingPlayer = Player.Human);
     GameState GetGameState(string gameId);
     GameState MakeMove(string gameId, Move move);
     GameState MakeAIMove(string gameId);
@@ -14,13 +14,18 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly Dictionary<string, GameState> _games = new();
-    public string CreateGame(int boardSize)
+    private readonly IGameEvaluator _gameEvaluator;
+    public GameService(IGameEvaluator gameEvaluator)
+    {
+        _gameEvaluator = gameEvaluator;
+    }
+    public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
         if(boardSize <= 0 || boardSize > 100)
             throw new InvalidOperationException("Board size must be between 1 and 100.");
 
         string gameId = Guid.NewGuid().ToString();
-        _games[gameId] = new GameState(boardSize);
+        _games[gameId] = new GameState(boardSize, startingPlayer);
 
         return gameId;
     }
@@ -40,7 +45,7 @@ public class GameService : IGameService
 
         var state = _games[gameId];
 
-        if(state.Result != GameResult.Ongoing)
+        if(state.GameEvaluation.IsGameOver)
             throw new InvalidOperationException("The game has already ended.");
         else if(state.CurrentPlayer != Player.Human)
             throw new InvalidOperationException("It's not the human player's turn.");
@@ -51,6 +56,10 @@ public class GameService : IGameService
 
         state.Board[move.X][move.Y] = Player.Human;
 
+        var evaluation = _gameEvaluator.EvaluateGame(state);
+        state.GameEvaluation.IsGameOver = evaluation.IsGameOver;
+        state.GameEvaluation.Winner = evaluation.Winner;
+        state.GameEvaluation.Scores = evaluation.Scores;
         state.CurrentPlayer = Player.AI;
 
         return state;
@@ -63,7 +72,7 @@ public class GameService : IGameService
 
         var state = _games[gameId];
 
-        if(state.Result != GameResult.Ongoing)
+        if(state.GameEvaluation.IsGameOver)
             throw new InvalidOperationException("The game has already ended.");
         else if(state.CurrentPlayer != Player.AI)
             throw new InvalidOperationException("It's not the AI player's turn.");
@@ -75,6 +84,10 @@ public class GameService : IGameService
                 if(state.Board[r][c] == Player.None)
                 {
                     state.Board[r][c] = Player.AI;
+                    var evaluation = _gameEvaluator.EvaluateGame(state);
+                    state.GameEvaluation.IsGameOver = evaluation.IsGameOver;
+                    state.GameEvaluation.Winner = evaluation.Winner;
+                    state.GameEvaluation.Scores = evaluation.Scores;
                     state.CurrentPlayer = Player.Human;
                     return state;
                 }
