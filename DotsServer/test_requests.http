@@ -1,4 +1,4 @@
-POST http://localhost:5158/api/game/new?board-size=6
+POST http://localhost:5158/api/game/new?board-size=90
 
 ###
 

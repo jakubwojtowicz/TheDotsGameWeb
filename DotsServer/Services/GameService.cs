@@ -59,7 +59,8 @@ public class GameService : IGameService
         var evaluation = _gameEvaluator.EvaluateGame(state);
         state.GameEvaluation.IsGameOver = evaluation.IsGameOver;
         state.GameEvaluation.Winner = evaluation.Winner;
-        state.GameEvaluation.Scores = evaluation.Scores;
+        state.GameEvaluation.AiScore = evaluation.AiScore;
+        state.GameEvaluation.HumanScore = evaluation.HumanScore;
         state.CurrentPlayer = Player.AI;
 
         return state;
@@ -87,7 +88,8 @@ public class GameService : IGameService
                     var evaluation = _gameEvaluator.EvaluateGame(state);
                     state.GameEvaluation.IsGameOver = evaluation.IsGameOver;
                     state.GameEvaluation.Winner = evaluation.Winner;
-                    state.GameEvaluation.Scores = evaluation.Scores;
+                    state.GameEvaluation.AiScore = evaluation.AiScore;
+                    state.GameEvaluation.HumanScore = evaluation.HumanScore;
                     state.CurrentPlayer = Player.Human;
                     return state;
                 }
