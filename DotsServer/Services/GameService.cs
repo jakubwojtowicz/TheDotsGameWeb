@@ -2,6 +2,7 @@ using DotsWebApi.DTO;
 using DotsWebApi.Exceptions;
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
+using DotsWebApi.Services.AI;
 namespace DotsWebApi.Services;
 
 public interface IGameService
@@ -16,9 +17,11 @@ public class GameService : IGameService
 {
     private readonly Dictionary<string, GameState> _games = new();
     private readonly IGameRules _gameRules;
-    public GameService(IGameRules gameRules)
+    private readonly IAIStrategy _aIStrategy;
+    public GameService(IGameRules gameRules, IAIStrategy aIStrategy)
     {
         _gameRules = gameRules;
+        _aIStrategy = aIStrategy;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
@@ -55,21 +58,11 @@ public class GameService : IGameService
             throw new GameNotFoundException();
 
         ValidateTurn(state, Player.AI);
+        var move = _aIStrategy.GetNextMove(state);
+        _gameRules.ValidateMove(state, move);
+        UpdateGameState(state, move);
 
-        for(int r = 0; r < state.Board.Length; r++)
-        {
-            for(int c = 0; c < state.Board[r].Length; c++)
-            {
-                if(state.Board[r][c] == Player.None)
-                {
-                    var move = new Move { Player = Player.AI, X = r, Y = c };
-                    UpdateGameState(state, move);
-                    return state;
-                }
-            }
-        }
-        
-        throw new InvalidOperationException("No valid moves left for AI");
+        return state;
     }
 
     private void UpdateGameState(GameState state, Move move)

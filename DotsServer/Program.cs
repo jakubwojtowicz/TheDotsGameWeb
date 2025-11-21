@@ -1,5 +1,6 @@
 using DotsServer.Middleware;
 using DotsWebApi.Services;
+using DotsWebApi.Services.AI;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,7 @@ builder.Services.AddControllers();
 // Register DI services
 builder.Services.AddSingleton<IGameRules, GameRules>();
 builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<IAIStrategy, RandomMoveAiStrategy>();
 
 var app = builder.Build();
 
