@@ -1,3 +1,4 @@
+using DotsServer.Services;
 using DotsWebApi.DTO;
 using DotsWebApi.Exceptions;
 using DotsWebApi.Model;
@@ -18,15 +19,19 @@ public class GameService : IGameService
     private readonly Dictionary<string, GameState> _games = new();
     private readonly IGameRules _gameRules;
     private readonly IAIStrategy _aIStrategy;
-    public GameService(IGameRules gameRules, IAIStrategy aIStrategy)
+    private readonly IMoveApplier _moveApplier;
+    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IMoveApplier moveApplier)
     {
         _gameRules = gameRules;
         _aIStrategy = aIStrategy;
+        _moveApplier = moveApplier;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
         string gameId = Guid.NewGuid().ToString();
+
         _games[gameId] = new GameState(boardSize, startingPlayer);
+
         return gameId;
     }
 
@@ -45,8 +50,11 @@ public class GameService : IGameService
 
         var move = new Move { Player = Player.Human, X = moveDto.X, Y = moveDto.Y };
 
-        ValidateTurn(state, Player.Human);
-        _gameRules.ValidateMove(state, move);
+        var validation = _gameRules.GetMoveValidation(state, move);
+
+        if (!validation.IsValid)
+            throw new InvalidMoveException(validation.Message);
+
         UpdateGameState(state, move);
 
         return state;
@@ -57,9 +65,13 @@ public class GameService : IGameService
         if (!_games.TryGetValue(gameId, out var state))
             throw new GameNotFoundException();
 
-        ValidateTurn(state, Player.AI);
+        if (state.IsGameOver)
+            throw new InvalidOperationException("Game is already over.");
+        if (state.CurrentPlayer != Player.AI)
+            throw new InvalidOperationException("It's not AI's turn to play.");
+
         var move = _aIStrategy.GetNextMove(state);
-        _gameRules.ValidateMove(state, move);
+
         UpdateGameState(state, move);
 
         return state;
@@ -67,39 +79,18 @@ public class GameService : IGameService
 
     private void UpdateGameState(GameState state, Move move)
     {
-        state.Board[move.X][move.Y] = move.Player;
-        state.LastMove = move;
+        _moveApplier.ApplyMove(state, move);
 
-        var opponent = move.Player == Player.Human ? Player.AI : Player.Human;
+        var moveResult = _gameRules.GetMoveResult(state, move.Player, move.Player == Player.Human ? Player.AI : Player.Human);
 
-        var moveResult = _gameRules.GetMoveResult(state, move.Player, opponent);
-     
-        state.LastMoveResult = moveResult;
+        _moveApplier.CaptureDots(state, moveResult);
 
-        if(move.Player == Player.Human)
-        {
-            state.HumanScore += moveResult.Score;
-        }
-        else if(move.Player == Player.AI)
-        {
-            state.AiScore += moveResult.Score;
-        }
-
-        foreach(var (r,c) in moveResult.Captured)
-        {
-            state.Board[r][c] = move.Player;
-        }
-
-        state.IsGameOver = _gameRules.CheckGameOver(state);
+        state.IsGameOver = _gameRules.IsGameOver(state);
         state.Winner = _gameRules.GetWinner(state);
-        state.CurrentPlayer = _gameRules.SwitchPlayer(state);
+        state.CurrentPlayer = _gameRules.GetNextPlayer(state);
+        state.LastMoveResult = moveResult;
+        state.Scores[move.Player] += moveResult.Score;
+        state.LastMove = move;
     }
-
-    private void ValidateTurn(GameState state, Player player)
-    {
-        if(state.IsGameOver)
-            throw new InvalidOperationException("The game has already ended.");
-        else if(state.CurrentPlayer != player)
-            throw new InvalidOperationException($"It's not the {player} player's turn.");
-    }
+       
 }

@@ -7,8 +7,11 @@ public class GameState
     public Player CurrentPlayer { get; set; }
     public bool IsGameOver { get; set; } = false;
     public Player Winner { get; set; } = Player.None;
-    public int AiScore { get; set; } = 0;
-    public int HumanScore { get; set; } = 0;
+    public Dictionary<Player, int> Scores => new()
+    {
+        { Player.Human, 0 },
+        { Player.AI, 0 }
+    };
     public Move? LastMove { get; set; }
     public MoveResult? LastMoveResult { get; set; }
     public GameState(int boardSize, Player startingPlayer)

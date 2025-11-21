@@ -23,6 +23,6 @@ public class RandomMoveAiStrategy : IAIStrategy
         if (availableMoves.Count == 0)
             throw new InvalidOperationException("No available moves for AI.");
         var (row, col) = availableMoves[rand.Next(availableMoves.Count)];
-        return new Move { Player = Player.AI, X = col, Y = row };
+        return new Move { Player = Player.AI, X = row, Y = col };
     }
 }

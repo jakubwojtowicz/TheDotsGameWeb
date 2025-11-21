@@ -26,7 +26,15 @@ public class ErrorHandlingMiddleware
             var response = new { message = ex.Message };
             await context.Response.WriteAsJsonAsync(response);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidMoveException ex)
+        {
+            _logger.LogWarning(ex.Message);
+            context.Response.StatusCode = 400;
+            context.Response.ContentType = "application/json";
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsJsonAsync(response);
+        }
+        catch(InvalidOperationException ex)
         {
             _logger.LogWarning(ex.Message);
             context.Response.StatusCode = 400;

@@ -5,16 +5,16 @@ namespace DotsWebApi.Services;
 
 public interface IGameRules
 {
-    public void ValidateMove(GameState state, Move move);
-    public bool CheckGameOver(GameState state);
+    public MoveValidation GetMoveValidation(GameState state, Move move);
+    public bool IsGameOver(GameState state);
     public Player GetWinner(GameState state);   
     public MoveResult GetMoveResult(GameState state, Player player, Player opponent);
-    public Player SwitchPlayer(GameState state);
+    public Player GetNextPlayer(GameState state);
 }
 
 public class GameRules : IGameRules
 {
-    public bool CheckGameOver(GameState state)
+    public bool IsGameOver(GameState state)
     {
         for(int r = 0; r < state.Board.Length; r++)
         {
@@ -31,9 +31,9 @@ public class GameRules : IGameRules
 
     public Player GetWinner(GameState state)
     {
-        return state.IsGameOver ? 
-            (state.AiScore > state.HumanScore ? Player.AI : state.HumanScore > state.AiScore ? Player.Human : Player.None)
-            : Player.None;
+        if(state.IsGameOver || state.Scores[Player.Human] == state.Scores[Player.AI])
+            return Player.None;
+        return state.Scores[Player.Human] > state.Scores[Player.AI] ? Player.Human : Player.AI;
     }
 
     private static readonly (int, int)[] Directions = new (int, int)[]
@@ -97,18 +97,40 @@ public class GameRules : IGameRules
         };
     }
 
-    public Player SwitchPlayer(GameState state)
+    public Player GetNextPlayer(GameState state)
     {
         if(state.IsGameOver)
             return Player.None;
         return state.CurrentPlayer == Player.Human ? Player.AI : Player.Human;
     }
 
-    public void ValidateMove(GameState state, Move move)
+    public MoveValidation GetMoveValidation(GameState state, Move move)
     {
-        if(state.Board[move.X][move.Y] != Player.None)
-            throw new InvalidOperationException("Cell is already occupied.");
+        var validation = new MoveValidation();
+
+        validation.IsValid = true;
+
+        if (state.IsGameOver)
+        {
+            validation.IsValid = false;
+            validation.Message = "The game has already ended.";   
+        }
+        else if(state.CurrentPlayer != move.Player)
+        {
+            validation.IsValid = false;
+            validation.Message = $"It's not the {move.Player} player's turn.";
+        }
+        else if(state.Board[move.X][move.Y] != Player.None)
+        {
+            validation.IsValid = false;
+            validation.Message = "The cell is already occupied.";
+        }
         else if(move.X < 0 || move.X >= state.Board.Length || move.Y < 0 || move.Y >= state.Board.Length)
-            throw new InvalidOperationException("Move is out of bounds.");
+        {
+            validation.IsValid = false;
+            validation.Message = "Move is out of board bounds.";
+        }
+            
+        return validation;
     }
 }
