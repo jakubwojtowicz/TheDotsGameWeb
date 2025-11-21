@@ -5,13 +5,19 @@ public class GameState
 {
     public Player[][] Board { get; }
     public Player CurrentPlayer { get; set; }
-    public GameEvaluation GameEvaluation { get; }
+    public bool IsGameOver { get; set; } = false;
+    public Player Winner { get; set; } = Player.None;
+    public int AiScore { get; set; } = 0;
+    public int HumanScore { get; set; } = 0;
+    public Move? LastMove { get; set; }
+    public MoveResult? LastMoveResult { get; set; }
     public GameState(int boardSize, Player startingPlayer)
     {
+        if(boardSize <= 0 || boardSize > 100)
+            throw new InvalidOperationException("Board size must be between 1 and 100.");
         Board = new Player[boardSize][];
         for (int r = 0; r < boardSize; r++)
             Board[r] = new Player[boardSize];
-        GameEvaluation = new GameEvaluation();
         CurrentPlayer = startingPlayer;
     }
 }

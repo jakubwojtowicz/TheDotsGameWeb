@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 // Register DI services
-builder.Services.AddSingleton<IGameEvaluator, GameEvaluator>();
+builder.Services.AddSingleton<IGameRules, GameRules>();
 builder.Services.AddSingleton<IGameService, GameService>();
 
 var app = builder.Build();

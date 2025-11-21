@@ -1,3 +1,4 @@
+using DotsWebApi.DTO;
 using DotsWebApi.Model;
 using DotsWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ public class GameController: ControllerBase
     }
 
     [HttpPut("{id:guid}/make-move")]
-    public ActionResult<GameState> MakeMove(string id, Move move)
+    public ActionResult<GameState> MakeMove(string id, MoveDto move)
     {
         var state = _gameService.MakeMove(id, move);
         return Ok(state);
