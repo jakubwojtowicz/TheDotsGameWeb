@@ -1,9 +1,9 @@
-using DotsServer.Services;
 using DotsWebApi.DTO;
 using DotsWebApi.Exceptions;
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services.AI;
+using DotsWebApi.Repositories;
 namespace DotsWebApi.Services;
 
 public interface IGameService
@@ -16,36 +16,39 @@ public interface IGameService
 
 public class GameService : IGameService
 {
-    private readonly Dictionary<string, GameState> _games = new();
+    private readonly IGameRepository _gameRepository;
     private readonly IGameRules _gameRules;
     private readonly IAIStrategy _aIStrategy;
     private readonly IMoveApplier _moveApplier;
-    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IMoveApplier moveApplier)
+    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IMoveApplier moveApplier, IGameRepository gameRepository)
     {
         _gameRules = gameRules;
         _aIStrategy = aIStrategy;
         _moveApplier = moveApplier;
+        _gameRepository = gameRepository;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
-        string gameId = Guid.NewGuid().ToString();
-
-        _games[gameId] = new GameState(boardSize, startingPlayer);
-
+        var gameId = Guid.NewGuid().ToString();
+        _gameRepository.Add(gameId, new GameState(boardSize, startingPlayer));
         return gameId;
     }
 
     public GameState GetGameState(string gameId)
     {
-        if(!_games.ContainsKey(gameId))
+        var state = _gameRepository.Get(gameId);
+        
+        if (state == null)
             throw new GameNotFoundException();
 
-        return _games[gameId];
+        return state;
     }
 
     public GameState MakeMove(string gameId, MoveDto moveDto)
     {
-        if (!_games.TryGetValue(gameId, out var state))
+        var state = _gameRepository.Get(gameId);
+
+        if (state == null)
             throw new GameNotFoundException();
 
         var move = new Move { Player = Player.Human, X = moveDto.X, Y = moveDto.Y };
@@ -62,7 +65,9 @@ public class GameService : IGameService
 
     public GameState MakeAIMove(string gameId)
     {
-        if (!_games.TryGetValue(gameId, out var state))
+        var state = _gameRepository.Get(gameId);
+
+        if (state == null)
             throw new GameNotFoundException();
 
         if (state.IsGameOver)
@@ -82,15 +87,17 @@ public class GameService : IGameService
         _moveApplier.ApplyMove(state, move);
 
         var moveResult = _gameRules.GetMoveResult(state, move.Player, move.Player == Player.Human ? Player.AI : Player.Human);
+        state.LastMoveResult = moveResult;
 
-        _moveApplier.CaptureDots(state, moveResult);
+        if(moveResult.Score > 0)
+            _moveApplier.CaptureDots(state, moveResult);
 
         state.IsGameOver = _gameRules.IsGameOver(state);
-        state.Winner = _gameRules.GetWinner(state);
-        state.CurrentPlayer = _gameRules.GetNextPlayer(state);
-        state.LastMoveResult = moveResult;
-        state.Scores[move.Player] += moveResult.Score;
-        state.LastMove = move;
+
+        if (state.IsGameOver){
+            state.CurrentPlayer = Player.None;
+            state.Winner = _gameRules.GetWinner(state);
+        }
     }
-       
+
 }

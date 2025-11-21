@@ -9,7 +9,6 @@ public interface IGameRules
     public bool IsGameOver(GameState state);
     public Player GetWinner(GameState state);   
     public MoveResult GetMoveResult(GameState state, Player player, Player opponent);
-    public Player GetNextPlayer(GameState state);
 }
 
 public class GameRules : IGameRules
@@ -31,9 +30,14 @@ public class GameRules : IGameRules
 
     public Player GetWinner(GameState state)
     {
-        if(state.IsGameOver || state.Scores[Player.Human] == state.Scores[Player.AI])
+        if(state.IsGameOver == false)
             return Player.None;
-        return state.Scores[Player.Human] > state.Scores[Player.AI] ? Player.Human : Player.AI;
+        else if(state.Scores[Player.Human] > state.Scores[Player.AI ])
+            return Player.Human;
+        else if(state.Scores[Player.AI] > state.Scores[Player.Human])
+            return Player.AI;
+        else
+            return Player.None; // Tie
     }
 
     private static readonly (int, int)[] Directions = new (int, int)[]
@@ -95,13 +99,6 @@ public class GameRules : IGameRules
             Score = score,
             Captured = captured
         };
-    }
-
-    public Player GetNextPlayer(GameState state)
-    {
-        if(state.IsGameOver)
-            return Player.None;
-        return state.CurrentPlayer == Player.Human ? Player.AI : Player.Human;
     }
 
     public MoveValidation GetMoveValidation(GameState state, Move move)

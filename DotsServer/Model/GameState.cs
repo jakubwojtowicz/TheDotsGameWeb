@@ -7,7 +7,7 @@ public class GameState
     public Player CurrentPlayer { get; set; }
     public bool IsGameOver { get; set; } = false;
     public Player Winner { get; set; } = Player.None;
-    public Dictionary<Player, int> Scores => new()
+    public Dictionary<Player, int> Scores { get; } = new()
     {
         { Player.Human, 0 },
         { Player.AI, 0 }

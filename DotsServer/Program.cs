@@ -1,6 +1,6 @@
-using DotsServer.Middleware;
-using DotsServer.Services;
+using DotsWebApi.Middleware;
 using DotsWebApi.Services;
+using DotsWebApi.Repositories;
 using DotsWebApi.Services.AI;
 using Serilog;
 
@@ -22,6 +22,7 @@ builder.Services.AddControllers();
 
 // Register DI services
 builder.Services.AddSingleton<IGameRules, GameRules>();
+builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
 builder.Services.AddSingleton<IMoveApplier, MoveApplier>();
 builder.Services.AddSingleton<IAIStrategy, RandomMoveAiStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();

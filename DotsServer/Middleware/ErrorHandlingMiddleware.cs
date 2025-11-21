@@ -1,6 +1,6 @@
 using DotsWebApi.Exceptions;
 
-namespace DotsServer.Middleware;
+namespace DotsWebApi.Middleware;
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;

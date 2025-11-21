@@ -7,6 +7,88 @@ using Xunit;
 public class GameRulesTests
 {
     [Fact]
+    public void IsGameOver_FullBoard_ReturnsTrue()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Board[0] = new[] { Player.Human, Player.AI };
+        state.Board[1] = new[] { Player.AI, Player.Human };
+
+        var rules = new GameRules();
+        var result = rules.IsGameOver(state);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsGameOver_PartialBoard_ReturnsFalse()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Board[0] = new[] { Player.Human, Player.None };
+        state.Board[1] = new[] { Player.AI, Player.Human };
+
+        var rules = new GameRules();
+        var result = rules.IsGameOver(state);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void GetWinner_HumanWins_ReturnsHuman()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Scores[Player.Human] = 3;
+        state.Scores[Player.AI] = 1;
+        state.IsGameOver = true;
+
+        var rules = new GameRules();
+        var winner = rules.GetWinner(state);
+
+        Assert.Equal(Player.Human, winner);
+    }
+
+    [Fact]
+    public void GetWinner_AIWins_ReturnsAI()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Scores[Player.Human] = 1;
+        state.Scores[Player.AI] = 4;
+        state.IsGameOver = true;
+
+        var rules = new GameRules();
+        var winner = rules.GetWinner(state);
+
+        Assert.Equal(Player.AI, winner);
+    }
+
+    [Fact]
+    public void GetWinner_Tie_ReturnsNone()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Scores[Player.Human] = 2;
+        state.Scores[Player.AI] = 2;
+        state.IsGameOver = true;
+
+        var rules = new GameRules();
+        var winner = rules.GetWinner(state);
+
+        Assert.Equal(Player.None, winner);
+    }
+
+    [Fact]
+    public void GetWinner_GameNotOver_ReturnsNone()
+    {
+        var state = new GameState(2, Player.Human);
+        state.Scores[Player.Human] = 3;
+        state.Scores[Player.AI] = 1;
+        state.IsGameOver = false;
+
+        var rules = new GameRules();
+        var winner = rules.GetWinner(state);
+
+        Assert.Equal(Player.None, winner);
+    }
+
+    [Fact]
     public void GetMoveResult_OneEnclosedDot_ReturnOnePoint()
     {
         var state = new GameState(3, Player.Human);
@@ -99,5 +181,118 @@ public class GameRulesTests
 
         Assert.Equal(0, result.Score);
         Assert.Empty(result.Captured);  
+    }
+
+    [Fact]
+    public void GetMoveResult_EnclosedOnBorder_ReturnZeroPoints()
+    {
+        var state = new GameState(3, Player.Human);
+
+        state.Board[0] = new[] { Player.None, Player.None, Player.AI};
+        state.Board[1] = new[] { Player.None, Player.AI, Player.Human};
+        state.Board[2] = new[] { Player.None, Player.None, Player.AI};
+
+        var player = Player.AI;
+        var opponent = Player.Human;
+        var rules = new GameRules();
+
+        var result = rules.GetMoveResult(state, player, opponent);
+
+        Assert.Equal(0, result.Score);
+        Assert.Empty(result.Captured);  
+    }
+
+    [Fact]
+    public void GetMoveValidation_ValidMove_ReturnsValid()
+    {
+        var state = new GameState(3, Player.Human);
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var rules = new GameRules();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.True(validation.IsValid);
+    }
+
+    [Fact]
+    public void GetMoveValidation_WrongPlayer_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.AI,
+        };
+
+        var rules = new GameRules();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void GetMoveValidation_GameEnded_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+        state.IsGameOver = true;
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var rules = new GameRules();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void GetMoveValidation_OutOfBounds_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+        state.IsGameOver = true;
+
+        var move = new Move
+        {
+            X = 50000,
+            Y = -10,
+            Player = Player.Human,
+        };
+
+        var rules = new GameRules();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void GetMoveValidation_CellOccupied_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+
+        state.Board[0] = new[] { Player.None, Player.AI, Player.None };
+
+        var move = new Move
+        {
+            X = 0,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var rules = new GameRules();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.False(validation.IsValid);
     }
 }
