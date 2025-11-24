@@ -12,14 +12,14 @@ namespace DotsServerTests.Services;
 
 public class GameServiceTests
 {
-    private readonly Mock<IGameRules> _gameRules = new();
+    private readonly Mock<IGameStateProcessor> _gameStateProcessor = new();
     private readonly Mock<IAIStrategy> _aiStrategy = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
 
     [Fact]
     public void CreateGame_ReturnsGameIdAndStoresGameState()
     {
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var gameId = service.CreateGame(3, Player.Human);
 
@@ -36,7 +36,7 @@ public class GameServiceTests
     [Fact]
     public void GetGameState_InvalidGameId_ThrowsException()
     {
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var notExistingId = "1234";
 
@@ -49,7 +49,7 @@ public class GameServiceTests
     [Fact]
     public void GetGameState_ValidGameId_ReturnGameState()
     {
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var existingId = "1234";
 
@@ -71,7 +71,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initialState);
 
-        _gameRules.Setup(r => r.GetMoveValidation(
+        _gameStateProcessor.Setup(r => r.GetMoveValidation(
             It.IsAny<GameState>(), 
             It.IsAny<Move>()))
             .Returns(new MoveValidation { IsValid = true });
@@ -82,13 +82,13 @@ public class GameServiceTests
         newState.LastMove = new Move { Player = Player.Human, X = 0, Y = 0 };
         newState.LastMoveResult = new MoveResult { Score = 0 };
 
-        _gameRules.Setup(r => r.ApplyMove(initialState, 
+        _gameStateProcessor.Setup(r => r.ApplyMove(initialState, 
             It.Is<Move>(m => m.X == 0 && m.Y == 0)))
             .Returns(newState);
 
         _gameRepository.Setup(r => r.Update(gameId, newState));
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
@@ -111,12 +111,12 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initialState);
 
-        _gameRules.Setup(r => r.GetMoveValidation(
+        _gameStateProcessor.Setup(r => r.GetMoveValidation(
             It.IsAny<GameState>(), 
             It.IsAny<Move>()))
             .Returns(new MoveValidation { IsValid = false, Message = "Invalid move." });
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
@@ -131,7 +131,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(() => null);
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
@@ -146,7 +146,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(() => null);
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         Assert.Throws<GameNotFoundException>(() => service.MakeAIMove(gameId));
     }
@@ -159,7 +159,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(new GameState(3, Player.Human){IsGameOver = true});
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         Assert.Throws<InvalidOperationException>(() => service.MakeAIMove(gameId));
     }
@@ -172,7 +172,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(new GameState(3, Player.Human){IsGameOver = false, CurrentPlayer = Player.Human});
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         Assert.Throws<InvalidOperationException>(() => service.MakeAIMove(gameId));
     }
@@ -198,10 +198,10 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initState);
 
-        _gameRules.Setup(r => r.ApplyMove(initState, aiMove))
+        _gameStateProcessor.Setup(r => r.ApplyMove(initState, aiMove))
             .Returns(newState);
 
-        var service = new GameService(_gameRules.Object, _aiStrategy.Object, _gameRepository.Object);
+        var service = new GameService(_gameStateProcessor.Object, _aiStrategy.Object, _gameRepository.Object);
 
         var returnedState = service.MakeAIMove(gameId);
 

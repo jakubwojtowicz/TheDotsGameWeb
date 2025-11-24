@@ -5,7 +5,7 @@ using Xunit;
 
 namespace DotsServerTests.Services;
 
-public class GameRulesTests
+public class GameStateProcessorTests
 {
     [Fact]
     public void IsGameOver_FullBoard_ReturnsTrue()
@@ -14,7 +14,7 @@ public class GameRulesTests
         state.Board[0] = new[] { Player.Human, Player.AI };
         state.Board[1] = new[] { Player.AI, Player.Human };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var result = rules.IsGameOver(state);
 
         Assert.True(result);
@@ -27,7 +27,7 @@ public class GameRulesTests
         state.Board[0] = new[] { Player.Human, Player.None };
         state.Board[1] = new[] { Player.AI, Player.Human };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var result = rules.IsGameOver(state);
 
         Assert.False(result);
@@ -41,7 +41,7 @@ public class GameRulesTests
         state.Scores[Player.AI] = 1;
         state.IsGameOver = true;
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var winner = rules.GetWinner(state);
 
         Assert.Equal(Player.Human, winner);
@@ -55,7 +55,7 @@ public class GameRulesTests
         state.Scores[Player.AI] = 4;
         state.IsGameOver = true;
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var winner = rules.GetWinner(state);
 
         Assert.Equal(Player.AI, winner);
@@ -69,7 +69,7 @@ public class GameRulesTests
         state.Scores[Player.AI] = 2;
         state.IsGameOver = true;
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var winner = rules.GetWinner(state);
 
         Assert.Equal(Player.None, winner);
@@ -83,7 +83,7 @@ public class GameRulesTests
         state.Scores[Player.AI] = 1;
         state.IsGameOver = false;
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var winner = rules.GetWinner(state);
 
         Assert.Equal(Player.None, winner);
@@ -100,7 +100,7 @@ public class GameRulesTests
 
         var player = Player.Human;
         var opponent = Player.AI;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -119,7 +119,7 @@ public class GameRulesTests
 
         var player = Player.Human;
         var opponent = Player.AI;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -139,7 +139,7 @@ public class GameRulesTests
 
         var player = Player.Human;
         var opponent = Player.AI;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -156,7 +156,7 @@ public class GameRulesTests
 
         var player = Player.Human;
         var opponent = Player.AI;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -176,7 +176,7 @@ public class GameRulesTests
 
         var player = Player.Human;
         var opponent = Player.AI;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -195,7 +195,7 @@ public class GameRulesTests
 
         var player = Player.AI;
         var opponent = Player.Human;
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var result = rules.GetMoveResult(state, player, opponent);
 
@@ -215,7 +215,7 @@ public class GameRulesTests
             Player = Player.Human,
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var validation = rules.GetMoveValidation(state, move);
 
         Assert.True(validation.IsValid);
@@ -233,7 +233,7 @@ public class GameRulesTests
             Player = Player.AI,
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var validation = rules.GetMoveValidation(state, move);
 
         Assert.False(validation.IsValid);
@@ -252,7 +252,7 @@ public class GameRulesTests
             Player = Player.Human,
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var validation = rules.GetMoveValidation(state, move);
 
         Assert.False(validation.IsValid);
@@ -271,7 +271,7 @@ public class GameRulesTests
             Player = Player.Human,
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var validation = rules.GetMoveValidation(state, move);
 
         Assert.False(validation.IsValid);
@@ -291,7 +291,7 @@ public class GameRulesTests
             Player = Player.Human,
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
         var validation = rules.GetMoveValidation(state, move);
 
         Assert.False(validation.IsValid);
@@ -309,7 +309,7 @@ public class GameRulesTests
             Player = Player.Human
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var newState = rules.ApplyMove(state, move);
 
@@ -331,7 +331,7 @@ public class GameRulesTests
             Player = Player.AI
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var newState = rules.ApplyMove(state, move);
 
@@ -356,7 +356,7 @@ public class GameRulesTests
             Player = Player.Human
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var newState = rules.ApplyMove(state, move);
 
@@ -383,7 +383,7 @@ public class GameRulesTests
             Player = Player.Human
         };
 
-        var rules = new GameRules();
+        var rules = new GameStateProcessor();
 
         var newState = rules.ApplyMove(state, move);
 

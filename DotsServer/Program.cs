@@ -21,7 +21,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 // Register DI services
-builder.Services.AddSingleton<IGameRules, GameRules>();
+builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
+builder.Services.AddSingleton<IMoveResolver, MoveResolver>();
+builder.Services.AddSingleton<IMoveValidator, MoveValidator>();
+builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
 builder.Services.AddSingleton<IAIStrategy, RandomMoveAiStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();

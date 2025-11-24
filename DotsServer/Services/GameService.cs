@@ -17,13 +17,18 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
-    private readonly IGameRules _gameRules;
+    private readonly IGameStateProcessor _gameStateProcessor;
     private readonly IAIStrategy _aIStrategy;
-    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IGameRepository gameRepository)
+    private readonly IMoveValidator _moveValidator;
+    public GameService(IGameStateProcessor gameStateProcessor, 
+        IAIStrategy aIStrategy, 
+        IGameRepository gameRepository, 
+        IMoveValidator moveValidator)
     {
-        _gameRules = gameRules;
+        _gameStateProcessor = gameStateProcessor;
         _aIStrategy = aIStrategy;
         _gameRepository = gameRepository;
+        _moveValidator = moveValidator;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
@@ -51,12 +56,12 @@ public class GameService : IGameService
 
         var move = new Move { Player = Player.Human, X = moveDto.X, Y = moveDto.Y };
 
-        var validation = _gameRules.GetMoveValidation(state, move);
+        var validation = _moveValidator.GetMoveValidation(state, move);
 
         if (!validation.IsValid)
             throw new InvalidMoveException(validation.Message);
 
-        var newState = _gameRules.ApplyMove(state, move);
+        var newState = _gameStateProcessor.GetNextState(state, move);
         _gameRepository.Update(gameId, newState);
 
         return newState;
@@ -76,7 +81,7 @@ public class GameService : IGameService
 
         var move = _aIStrategy.GetNextMove(state);
 
-        var newState = _gameRules.ApplyMove(state, move);
+        var newState = _gameStateProcessor.GetNextState(state, move);
         _gameRepository.Update(gameId, newState);
 
         return newState;
