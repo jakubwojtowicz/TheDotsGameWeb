@@ -9,6 +9,7 @@ public interface IGameRules
     public bool IsGameOver(GameState state);
     public Player GetWinner(GameState state);   
     public MoveResult GetMoveResult(GameState state, Player player, Player opponent);
+    public GameState ApplyMove(GameState prevState, Move move);
 }
 
 public class GameRules : IGameRules
@@ -117,17 +118,46 @@ public class GameRules : IGameRules
             validation.IsValid = false;
             validation.Message = $"It's not the {move.Player} player's turn.";
         }
-        else if(state.Board[move.X][move.Y] != Player.None)
-        {
-            validation.IsValid = false;
-            validation.Message = "The cell is already occupied.";
-        }
         else if(move.X < 0 || move.X >= state.Board.Length || move.Y < 0 || move.Y >= state.Board.Length)
         {
             validation.IsValid = false;
             validation.Message = "Move is out of board bounds.";
         }
+        else if(state.Board[move.X][move.Y] != Player.None)
+        {
+            validation.IsValid = false;
+            validation.Message = "The cell is already occupied.";
+        }
             
         return validation;
+    }
+
+    public GameState ApplyMove(GameState prevState, Move move)
+    {
+        var newState = prevState.Clone();
+        
+        newState.Board[move.X][move.Y] = move.Player;
+        newState.CurrentPlayer = move.Player == Player.Human ? Player.AI : Player.Human;
+        newState.LastMove = move;
+
+        var moveResult = GetMoveResult(newState, move.Player, move.Player == Player.Human ? Player.AI : Player.Human);
+        newState.LastMoveResult = moveResult;
+
+        if(moveResult.Score > 0){
+            foreach (var (r, c) in moveResult.Captured)
+            {
+                newState.Board[r][c] = moveResult.Player;
+            }
+            newState.Scores[moveResult.Player] += moveResult.Score;
+        }
+
+        newState.IsGameOver = IsGameOver(newState);
+
+        if (newState.IsGameOver){
+            newState.CurrentPlayer = Player.None;
+            newState.Winner = GetWinner(newState);
+        }
+
+        return newState;
     }
 }

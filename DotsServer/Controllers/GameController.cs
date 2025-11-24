@@ -3,6 +3,8 @@ using DotsWebApi.Model;
 using DotsWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
+namespace DotsWebApi.Controllers;
+
 [ApiController]
 [Route("api/game")]
 public class GameController: ControllerBase

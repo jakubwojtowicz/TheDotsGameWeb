@@ -23,7 +23,6 @@ builder.Services.AddControllers();
 // Register DI services
 builder.Services.AddSingleton<IGameRules, GameRules>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
-builder.Services.AddSingleton<IMoveApplier, MoveApplier>();
 builder.Services.AddSingleton<IAIStrategy, RandomMoveAiStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();
 

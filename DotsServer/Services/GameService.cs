@@ -19,12 +19,10 @@ public class GameService : IGameService
     private readonly IGameRepository _gameRepository;
     private readonly IGameRules _gameRules;
     private readonly IAIStrategy _aIStrategy;
-    private readonly IMoveApplier _moveApplier;
-    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IMoveApplier moveApplier, IGameRepository gameRepository)
+    public GameService(IGameRules gameRules, IAIStrategy aIStrategy, IGameRepository gameRepository)
     {
         _gameRules = gameRules;
         _aIStrategy = aIStrategy;
-        _moveApplier = moveApplier;
         _gameRepository = gameRepository;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
@@ -58,9 +56,10 @@ public class GameService : IGameService
         if (!validation.IsValid)
             throw new InvalidMoveException(validation.Message);
 
-        UpdateGameState(state, move);
+        var newState = _gameRules.ApplyMove(state, move);
+        _gameRepository.Update(gameId, newState);
 
-        return state;
+        return newState;
     }
 
     public GameState MakeAIMove(string gameId)
@@ -77,27 +76,9 @@ public class GameService : IGameService
 
         var move = _aIStrategy.GetNextMove(state);
 
-        UpdateGameState(state, move);
+        var newState = _gameRules.ApplyMove(state, move);
+        _gameRepository.Update(gameId, newState);
 
-        return state;
+        return newState;
     }
-
-    private void UpdateGameState(GameState state, Move move)
-    {
-        _moveApplier.ApplyMove(state, move);
-
-        var moveResult = _gameRules.GetMoveResult(state, move.Player, move.Player == Player.Human ? Player.AI : Player.Human);
-        state.LastMoveResult = moveResult;
-
-        if(moveResult.Score > 0)
-            _moveApplier.CaptureDots(state, moveResult);
-
-        state.IsGameOver = _gameRules.IsGameOver(state);
-
-        if (state.IsGameOver){
-            state.CurrentPlayer = Player.None;
-            state.Winner = _gameRules.GetWinner(state);
-        }
-    }
-
 }

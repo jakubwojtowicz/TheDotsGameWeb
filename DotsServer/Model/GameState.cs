@@ -16,11 +16,28 @@ public class GameState
     public MoveResult? LastMoveResult { get; set; }
     public GameState(int boardSize, Player startingPlayer)
     {
-        if(boardSize <= 0 || boardSize > 100)
-            throw new InvalidOperationException("Board size must be between 1 and 100.");
         Board = new Player[boardSize][];
         for (int r = 0; r < boardSize; r++)
             Board[r] = new Player[boardSize];
         CurrentPlayer = startingPlayer;
+    }
+    public GameState Clone()
+    {
+        var size = Board.Length;
+        var clone = new GameState(size, CurrentPlayer)
+        {
+            IsGameOver = this.IsGameOver,
+            Winner = this.Winner,
+            LastMove = this.LastMove,
+            LastMoveResult = this.LastMoveResult
+        };
+
+        for (int r = 0; r < size; r++)
+            Array.Copy(this.Board[r], clone.Board[r], size);
+
+        clone.Scores[Player.Human] = this.Scores[Player.Human];
+        clone.Scores[Player.AI] = this.Scores[Player.AI];
+
+        return clone;
     }
 }
