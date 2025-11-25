@@ -12,7 +12,7 @@ public class GameStateProcessor : IGameStateProcessor
 {
     private readonly IMoveResolver _moveResolver;
     private readonly IGameResultProvider _gameResultProvider;
-    public GameStateProcessor(IMoveResolver moveResolver, GameResultProvider gameResultProvider)
+    public GameStateProcessor(IMoveResolver moveResolver, IGameResultProvider gameResultProvider)
     {
         _moveResolver = moveResolver;
         _gameResultProvider = gameResultProvider;
