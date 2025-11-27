@@ -3,7 +3,7 @@ namespace DotsWebApi.Model;
 
 public class GameState
 {
-    public Player[][] Board { get; }
+    public Field[][] Board { get; }
     public Player CurrentPlayer { get; set; }
     public bool IsGameOver { get; set; } = false;
     public Player Winner { get; set; } = Player.None;
@@ -13,12 +13,11 @@ public class GameState
         { Player.AI, 0 }
     };
     public Move? LastMove { get; set; }
-    public MoveResult? LastMoveResult { get; set; }
     public GameState(int boardSize, Player startingPlayer)
     {
-        Board = new Player[boardSize][];
+        Board = new Field[boardSize][];
         for (int r = 0; r < boardSize; r++)
-            Board[r] = new Player[boardSize];
+            Board[r] = new Field[boardSize];
         CurrentPlayer = startingPlayer;
     }
     public GameState Clone()
@@ -28,8 +27,7 @@ public class GameState
         {
             IsGameOver = this.IsGameOver,
             Winner = this.Winner,
-            LastMove = this.LastMove,
-            LastMoveResult = this.LastMoveResult
+            LastMove = this.LastMove
         };
 
         for (int r = 0; r < size; r++)

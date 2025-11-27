@@ -31,10 +31,15 @@ public class MoveValidator: IMoveValidator
             validation.IsValid = false;
             validation.Message = "Move is out of board bounds.";
         }
-        else if(state.Board[move.X][move.Y] != Player.None)
+        else if(state.Board[move.X][move.Y].Player != Player.None)
         {
             validation.IsValid = false;
             validation.Message = "The cell is already occupied.";
+        }
+        else if(state.Board[move.X][move.Y].Enclosed != false)
+        {
+            validation.IsValid = false;
+            validation.Message = "The cell is in a loop.";
         }
             
         return validation;

@@ -22,7 +22,7 @@ builder.Services.AddControllers();
 
 // Register DI services
 builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
-builder.Services.AddSingleton<IMoveResolver, MoveResolver>();
+builder.Services.AddSingleton<IEnclosureDetector, EnclosureDetector>();
 builder.Services.AddSingleton<IMoveValidator, MoveValidator>();
 builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IMoveGenerator, MoveGenerator>();

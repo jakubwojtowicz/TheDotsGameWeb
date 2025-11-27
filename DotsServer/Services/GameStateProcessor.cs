@@ -10,11 +10,11 @@ public interface IGameStateProcessor
 
 public class GameStateProcessor : IGameStateProcessor
 {
-    private readonly IMoveResolver _moveResolver;
+    private readonly IEnclosureDetector _enclosureDetector;
     private readonly IGameResultProvider _gameResultProvider;
-    public GameStateProcessor(IMoveResolver moveResolver, IGameResultProvider gameResultProvider)
+    public GameStateProcessor(IEnclosureDetector enclosureDetector, IGameResultProvider gameResultProvider)
     {
-        _moveResolver = moveResolver;
+        _enclosureDetector = enclosureDetector;
         _gameResultProvider = gameResultProvider;
     }
 
@@ -22,19 +22,22 @@ public class GameStateProcessor : IGameStateProcessor
     {
         var newState = prevState.Clone();
         
-        newState.Board[move.X][move.Y] = move.Player;
+        newState.Board[move.X][move.Y].Player = move.Player;
         newState.CurrentPlayer = move.Player == Player.Human ? Player.AI : Player.Human;
         newState.LastMove = move;
 
-        var moveResult = _moveResolver.GetMoveResult(newState, move.Player, move.Player == Player.Human ? Player.AI : Player.Human);
-        newState.LastMoveResult = moveResult;
+        var enclosed = _enclosureDetector.GetEnclosedFields(newState, move.Player);
 
-        if(moveResult.Score > 0){
-            foreach (var (r, c) in moveResult.Captured)
+        if(enclosed.Count > 0){
+            foreach (var (r, c) in enclosed)
             {
-                newState.Board[r][c] = moveResult.Player;
+                if(newState.Board[r][c].Player != Player.None)
+                {
+                    newState.Board[r][c].Player = move.Player;
+                    newState.Scores[move.Player] += 1;
+                }
+                newState.Board[r][c].Enclosed = true;
             }
-            newState.Scores[moveResult.Player] += moveResult.Score;
         }
 
         newState.IsGameOver = _gameResultProvider.IsGameOver(newState);

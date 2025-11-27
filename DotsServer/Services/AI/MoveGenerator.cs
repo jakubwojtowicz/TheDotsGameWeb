@@ -19,7 +19,7 @@ public class MoveGenerator : IMoveGenerator
         for (int r = 0; r < rows; r++)
         for (int c = 0; c < cols; c++)
         {
-            if (state.Board[r][c] == Player.None)
+            if (state.Board[r][c].Player == Player.None && state.Board[r][c].Enclosed == false)
             {
                 list.Add(new Move { X = r, Y = c, Player = state.CurrentPlayer});
             }
