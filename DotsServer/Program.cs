@@ -25,8 +25,11 @@ builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
 builder.Services.AddSingleton<IMoveResolver, MoveResolver>();
 builder.Services.AddSingleton<IMoveValidator, MoveValidator>();
 builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
+builder.Services.AddSingleton<IMoveGenerator, MoveGenerator>();
+builder.Services.AddSingleton<IStateEvaluator, StateEvaluator>();
+builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
-builder.Services.AddSingleton<IAIStrategy, RandomMoveAiStrategy>();
+builder.Services.AddSingleton<IAIStrategy, MinMaxAIStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();
 
 var app = builder.Build();
