@@ -1,8 +1,9 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services;
+using DotsWebApiTests.Helpers;
 
-namespace DotsServerTests.Services;
+namespace DotsServerTests.Tests.Services;
 
 public class MoveValidatorTests
 {
@@ -83,13 +84,40 @@ public class MoveValidatorTests
     [Fact]
     public void GetMoveValidation_CellOccupied_ReturnsInvalid()
     {
-        var state = new GameState(3, Player.Human);
-
-        state.Board[0] = new[] { Player.None, Player.AI, Player.None };
+        var state = BoardFactory.Create(
+            "N A N",
+            "N N N",
+            "N N N"
+        );
 
         var move = new Move
         {
             X = 0,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var rules = new MoveValidator();
+        var validation = rules.GetMoveValidation(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    
+    [Fact]
+    public void GetMoveValidation_CellEnclosed_ReturnsInvalid()
+    {
+        var state = BoardFactory.Create(
+            "E A H",
+            "A E A",
+            "H A H"
+        );
+
+        state.Board[1][1].EnclosedBy = Player.AI;
+
+        var move = new Move
+        {
+            X = 1,
             Y = 1,
             Player = Player.Human,
         };

@@ -4,30 +4,27 @@ using DotsWebApi.Services;
 using Moq;
 using Xunit;
 
-namespace DotsServerTests.Services;
+namespace DotsServerTests.Tests.Services;
 
 public class GameStateProcessorTests
 {
-    private readonly Mock<IMoveResolver> _moveResolver = new();
+    private readonly Mock<IEnclosureDetector> _enclosureDetector = new();
     private readonly Mock<IGameResultProvider> _resultProvider = new();
     private readonly GameStateProcessor _stateProcessor;
 
     public GameStateProcessorTests()
     {
-        _stateProcessor = new GameStateProcessor(_moveResolver.Object, _resultProvider.Object);
+        _stateProcessor = new GameStateProcessor(_enclosureDetector.Object, _resultProvider.Object);
     }
 
     [Fact]
     public void GetNextState_HumanMove_ReturnsNewState()
     {
-        _moveResolver.Setup(r => r.GetMoveResult(
+        _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
-            It.IsAny<Player>(),
             It.IsAny<Player>()))
             .Returns(
-                new MoveResult {
-                    Score = 0, 
-                    Player = Player.Human});
+                new List<(int r, int c)>());
 
         _resultProvider.Setup(r => r.GetWinner(
             It.IsAny<GameState>()))
@@ -54,20 +51,17 @@ public class GameStateProcessorTests
         Assert.Equal(Player.AI, newState.CurrentPlayer);
         Assert.Equal(move, newState.LastMove);
         Assert.False(newState.IsGameOver);
-        Assert.Equal(Player.Human, newState.Board[0][1]);
+        Assert.Equal(Player.Human, newState.Board[0][1].Player);
     }
 
     [Fact]
     public void GetNextState_AIMove_ReturnsNewState()
     {
-        _moveResolver.Setup(r => r.GetMoveResult(
+        _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
-            It.IsAny<Player>(),
             It.IsAny<Player>()))
             .Returns(
-                new MoveResult {
-                    Score = 0, 
-                    Player = Player.AI});
+                new List<(int r, int c)>());
 
         _resultProvider.Setup(r => r.GetWinner(
             It.IsAny<GameState>()))
@@ -94,20 +88,17 @@ public class GameStateProcessorTests
         Assert.Equal(Player.Human, newState.CurrentPlayer);
         Assert.Equal(move, newState.LastMove);
         Assert.False(newState.IsGameOver);
-        Assert.Equal(Player.AI, newState.Board[0][1]);
+        Assert.Equal(Player.AI, newState.Board[0][1].Player);
     }
 
     [Fact]
     public void GetNextState_LastMove_SetsGameEndedState()
     {
-        _moveResolver.Setup(r => r.GetMoveResult(
+        _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
-            It.IsAny<Player>(),
             It.IsAny<Player>()))
             .Returns(
-                new MoveResult {
-                    Score = 0, 
-                    Player = Player.Human});
+                new List<(int r, int c)>());
 
         _resultProvider.Setup(r => r.GetWinner(
             It.IsAny<GameState>()))
@@ -139,15 +130,11 @@ public class GameStateProcessorTests
     [Fact]
     public void GetNextState_MoveWithPoint_ApplyPointsAndUpdatesBoard()
     {
-        _moveResolver.Setup(r => r.GetMoveResult(
+        _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
-            It.IsAny<Player>(),
             It.IsAny<Player>()))
             .Returns(
-                new MoveResult {
-                    Score = 1, 
-                    Player = Player.Human,
-                    Captured = new List<(int r, int c)>{(1,1)}});
+                new List<(int r, int c)>{(1,1)});
 
         _resultProvider.Setup(r => r.GetWinner(
             It.IsAny<GameState>()))
@@ -162,6 +149,8 @@ public class GameStateProcessorTests
 
         var state = new GameState(3, Player.Human);
 
+        state.Board[1][1].Player = Player.AI;
+
         var move = new Move
         {
             X = 1,
@@ -171,7 +160,7 @@ public class GameStateProcessorTests
 
         var newState = _stateProcessor.GetNextState(state, move);
 
-        Assert.Equal(Player.Human, newState.Board[1][1]);
         Assert.Equal(1, newState.Scores[Player.Human]);
+        Assert.Equal(Player.Human, newState.Board[1][1].EnclosedBy);
     }
 }

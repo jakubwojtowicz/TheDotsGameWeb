@@ -1,20 +1,39 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services;
+using DotsWebApiTests.Helpers;
 
-namespace DotsServerTests.Services;
+namespace DotsServerTests.Tests.Services;
 
 public class GameResultProviderTests
 {
+    private readonly GameResultProvider _provider;
+
+    public GameResultProviderTests()
+    {
+        _provider = new GameResultProvider();
+    }
+
+    [Fact]
+    public void IsGameOver_EmptyBoard_ReturnsTrue()
+    {
+        var state = new GameState(5, Player.Human);
+
+        var result = _provider.IsGameOver(state);
+
+        Assert.False(result);
+    }
+
     [Fact]
     public void IsGameOver_FullBoard_ReturnsTrue()
     {
-        var state = new GameState(2, Player.Human);
-        state.Board[0] = new[] { Player.Human, Player.AI };
-        state.Board[1] = new[] { Player.AI, Player.Human };
+        var state = BoardFactory.Create(
+            "H H A",
+            "H A A",
+            "A A H"
+        );
 
-        var rules = new GameResultProvider();
-        var result = rules.IsGameOver(state);
+        var result = _provider.IsGameOver(state);
 
         Assert.True(result);
     }
@@ -22,14 +41,31 @@ public class GameResultProviderTests
     [Fact]
     public void IsGameOver_PartialBoard_ReturnsFalse()
     {
-        var state = new GameState(2, Player.Human);
-        state.Board[0] = new[] { Player.Human, Player.None };
-        state.Board[1] = new[] { Player.AI, Player.Human };
+        var state = BoardFactory.Create(
+            "H H A",
+            "H E A",
+            "A A E"
+        );
 
-        var rules = new GameResultProvider();
-        var result = rules.IsGameOver(state);
+        var result = _provider.IsGameOver(state);
 
         Assert.False(result);
+    }
+
+    [Fact]
+    public void IsGameOver_PartialBoardWithEmptyEnclosedByHuman_ReturnsTrue()
+    {
+        var state = BoardFactory.Create(
+            "H H A",
+            "H E H",
+            "A H A"
+        );
+
+        state.Board[1][1].EnclosedBy = Player.Human;
+
+        var result = _provider.IsGameOver(state);
+
+        Assert.True(result);
     }
 
     [Fact]
@@ -40,8 +76,7 @@ public class GameResultProviderTests
         state.Scores[Player.AI] = 1;
         state.IsGameOver = true;
 
-        var rules = new GameResultProvider();
-        var winner = rules.GetWinner(state);
+        var winner = _provider.GetWinner(state);
 
         Assert.Equal(Player.Human, winner);
     }
@@ -54,8 +89,7 @@ public class GameResultProviderTests
         state.Scores[Player.AI] = 4;
         state.IsGameOver = true;
 
-        var rules = new GameResultProvider();
-        var winner = rules.GetWinner(state);
+        var winner = _provider.GetWinner(state);
 
         Assert.Equal(Player.AI, winner);
     }
@@ -68,8 +102,7 @@ public class GameResultProviderTests
         state.Scores[Player.AI] = 2;
         state.IsGameOver = true;
 
-        var rules = new GameResultProvider();
-        var winner = rules.GetWinner(state);
+        var winner = _provider.GetWinner(state);
 
         Assert.Equal(Player.None, winner);
     }
@@ -82,8 +115,7 @@ public class GameResultProviderTests
         state.Scores[Player.AI] = 1;
         state.IsGameOver = false;
 
-        var rules = new GameResultProvider();
-        var winner = rules.GetWinner(state);
+        var winner = _provider.GetWinner(state);
 
         Assert.Equal(Player.None, winner);
     }

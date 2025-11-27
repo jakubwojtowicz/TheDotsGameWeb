@@ -6,7 +6,7 @@ using DotsWebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace DotsServerTests.Controllers;
+namespace DotsServerTests.Tests.Controllers;
 
 public class GameControllerTests
 {

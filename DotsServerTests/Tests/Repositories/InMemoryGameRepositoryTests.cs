@@ -3,7 +3,7 @@ using DotsWebApi.Model.Enums;
 using DotsWebApi.Repositories;
 using Xunit;
 
-namespace DotsServerTests.Repositories;
+namespace DotsServerTests.Tests.Repositories;
 
 public class InMemoryGameRepositoryTests
 {
