@@ -18,7 +18,7 @@ public class GameResultProvider : IGameResultProvider
             for(int c = 0; c < state.Board[r].Length; c++)
             {
                 // If any cell is empty, the game is not over
-                if(state.Board[r][c].Player == Player.None && state.Board[r][c].Enclosed == false)
+                if(state.Board[r][c].Player == Player.None && state.Board[r][c].EnclosedBy == Player.None)
                     return false;
             }
         }

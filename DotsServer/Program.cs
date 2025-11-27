@@ -3,6 +3,7 @@ using DotsWebApi.Services;
 using DotsWebApi.Repositories;
 using DotsWebApi.Services.AI;
 using Serilog;
+using DotsWebApi.Services.AI.Heuristics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ builder.Services.AddSingleton<IMoveGenerator, MoveGenerator>();
 builder.Services.AddSingleton<IStateEvaluator, StateEvaluator>();
 builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
+builder.Services.AddSingleton<IHeuristic, ScoreHeuristic>();
+builder.Services.AddSingleton<IHeuristic, GameOverHeuristic>();
 builder.Services.AddSingleton<IAIStrategy, MinMaxAIStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();
 

@@ -5,5 +5,5 @@ namespace DotsWebApi.Model;
 public class Field
 {
     public Player Player { get; set; } = Player.None;
-    public bool Enclosed { get; set; } = false;
+    public Player EnclosedBy { get; set; } = Player.None;
 }

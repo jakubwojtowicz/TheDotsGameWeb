@@ -11,11 +11,11 @@ public interface IStateEvaluator
 
 public class StateEvaluator : IStateEvaluator
 {
-    private readonly List<IHeuristic> _heuristics = new();
+    private readonly List<IHeuristic> _heuristics;
 
-    public StateEvaluator(List<IHeuristic> heuristics)
+    public StateEvaluator(IEnumerable<IHeuristic> heuristics)
     {
-        _heuristics.AddRange(heuristics);
+        _heuristics = heuristics.ToList();
     }
     public int Evaluate(GameState state)
     {

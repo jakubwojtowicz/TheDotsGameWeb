@@ -16,13 +16,23 @@ public class GameState
     public GameState(int boardSize, Player startingPlayer)
     {
         Board = new Field[boardSize][];
+
         for (int r = 0; r < boardSize; r++)
+        {
             Board[r] = new Field[boardSize];
+
+            for (int c = 0; c < boardSize; c++)
+            {
+                Board[r][c] = new Field();
+            }
+        }
+
         CurrentPlayer = startingPlayer;
     }
     public GameState Clone()
     {
-        var size = Board.Length;
+        int size = Board.Length;
+
         var clone = new GameState(size, CurrentPlayer)
         {
             IsGameOver = this.IsGameOver,
@@ -31,7 +41,16 @@ public class GameState
         };
 
         for (int r = 0; r < size; r++)
-            Array.Copy(this.Board[r], clone.Board[r], size);
+        {
+            for (int c = 0; c < size; c++)
+            {
+                clone.Board[r][c] = new Field
+                {
+                    Player = this.Board[r][c].Player,
+                    EnclosedBy = this.Board[r][c].EnclosedBy
+                };
+            }
+        }
 
         clone.Scores[Player.Human] = this.Scores[Player.Human];
         clone.Scores[Player.AI] = this.Scores[Player.AI];

@@ -12,7 +12,7 @@ public class EnclosureDetector: IEnclosureDetector
 {
     public List<(int r, int c)> GetEnclosedFields(GameState state, Player player)
     {
-        //Use BFS to find all enclosed fields by a player
+        //Use BFS to find all new enclosed fields by a player
 
         (int, int)[] directions = new (int, int)[]
         {
@@ -29,7 +29,8 @@ public class EnclosureDetector: IEnclosureDetector
         for (int r = 0; r < rows; r++)
         for (int c = 0; c < cols; c++)
         {
-            if (state.Board[r][c].Player == player || state.Board[r][c].Enclosed == true || visited[r,c]) continue;
+            //look for opponent's dot or empty which are not enclosed
+            if (state.Board[r][c].Player == player || state.Board[r][c].EnclosedBy == player || visited[r,c]) continue;
             q.Clear();
             q.Enqueue((r,c));
             visited[r,c] = true;
@@ -45,7 +46,7 @@ public class EnclosureDetector: IEnclosureDetector
                     int nr = cr + dr, nc = cc + dc;
                     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
                     if (visited[nr, nc]) continue;
-                    if (state.Board[nr][nc].Player != player)
+                    if (state.Board[nr][nc].Player != player && state.Board[nr][nc].EnclosedBy != player)
                     {
                         visited[nr, nc] = true;
                         q.Enqueue((nr, nc));

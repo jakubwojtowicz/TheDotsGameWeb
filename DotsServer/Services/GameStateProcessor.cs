@@ -32,11 +32,8 @@ public class GameStateProcessor : IGameStateProcessor
             foreach (var (r, c) in enclosed)
             {
                 if(newState.Board[r][c].Player != Player.None)
-                {
-                    newState.Board[r][c].Player = move.Player;
                     newState.Scores[move.Player] += 1;
-                }
-                newState.Board[r][c].Enclosed = true;
+                newState.Board[r][c].EnclosedBy = move.Player;
             }
         }
 
