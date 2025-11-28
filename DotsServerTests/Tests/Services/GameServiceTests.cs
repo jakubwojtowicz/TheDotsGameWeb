@@ -7,6 +7,7 @@ using DotsWebApi.DTO;
 using DotsWebApi.Services.AI;
 using Xunit;
 using Moq;
+using DotsWebApi.Services.StateProcessors;
 
 namespace DotsServerTests.Tests.Services;
 

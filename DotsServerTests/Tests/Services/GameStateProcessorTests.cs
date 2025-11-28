@@ -1,6 +1,7 @@
 ﻿using DotsWebApi.Model;         
 using DotsWebApi.Model.Enums;    
 using DotsWebApi.Services;
+using DotsWebApi.Services.StateProcessors;
 using Moq;
 using Xunit;
 
