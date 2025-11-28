@@ -1,7 +1,7 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 
-namespace DotsWebApi.Services;
+namespace DotsWebApi.Services.StateProcessors;
 
 public interface IMoveValidator
 {

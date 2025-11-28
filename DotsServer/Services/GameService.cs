@@ -4,6 +4,7 @@ using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services.AI;
 using DotsWebApi.Repositories;
+using DotsWebApi.Services.StateProcessors;
 namespace DotsWebApi.Services;
 
 public interface IGameService

@@ -1,0 +1,212 @@
+@startuml
+skinparam linetype ortho
+
+package Model {
+  class GameState{
+    + Field[][] Board 
+    + Player CurrentPlayer
+    + IsGameOver bool
+    + Winner Player 
+    + Dictionary<Player, int> Scores
+    + Move LastMove
+    + Clone() : GameState
+  }
+
+  package enums{
+
+  enum Player{
+    Human 
+    AI
+    None
+  }
+
+  }
+
+  class Field {
+    + Player Player
+    + Player EnclosedBy
+  }
+
+  class Move {
+    + Player Player 
+    + int X 
+    + int Y
+  }
+
+  class MoveValidation {
+    + bool IsValid 
+    + string Message 
+  }
+
+  GameState "1" *-- "*" Field 
+  GameState "1" --> "0..1" Move 
+  GameState --> Player 
+
+}
+
+package Controllers {
+  class GameController {
+    - IGameService _gameService
+    + CreateGame(int boardSize, Player startingPlayer) : GameState
+    + GetById(string gameId, MoveDto move) : GameState
+    + MakeMove(string gameID) : GameState
+    + MakeAIMove(string gameID) : GameState
+  }
+}
+
+package Repositories {
+  interface IGameRepository {
+    + Add (string id, GameState state) : void
+    + Exists(string id) : bool
+    + Get(string id) : GameState
+    + Update(string id, GameState state) : void
+  }
+
+  class InMemoryGameRepository {
+    - Dictionary<string, GameState> _games
+    + Add (string id, GameState state) : void
+    + Exists(string id) : bool
+    + Get(string id) : GameState
+    + Update(string id, GameState state) : void
+  }
+}
+
+package Services {
+
+  interface IGameService {
+    + CreateGame(int boardSize, Player startingPlayer) : GameState
+    + GetGameState(string gameId, MoveDto move) : GameState
+    + MakeMove(string gameID) : GameState
+    + MakeAIMove(string gameID) : GameState
+  }
+
+  class GameService {
+    - IGameRepository _gameRepository
+    - IGameStateProcessor _gameStateProcessor
+    - IAIStrategy _aiStrategy
+    - IMoveValidator _moveValidator
+    + CreateGame(int boardSize, Player startingPlayer) : GameState
+    + GetGameState(string gameId, MoveDto move) : GameState
+    + MakeMove(string gameID) : GameState
+    + MakeAIMove(string gameID) : GameState
+  }
+
+  package StateProcessors{
+
+  interface IGameStateProcessor {
+    + GetNextState(GameState prevState, Move move) : GameState
+  }
+
+  interface IMoveValidator {
+    + GetMoveValidation(GameState state, Move move) : MoveValidation
+  }
+
+  class MoveValidator {
+    + GetMoveValidation(GameState state, Move move) : MoveValidation
+  }
+
+  class GameStateProcessor {
+    - IEnclosureDetector _enclosureDetector
+    - IGameResultProvider _gameResultProvider
+    + GetNextState(GameState prevState, Move move) : GameState
+  }
+
+  interface IEnclosureDetector {
+    + GetEnclosedFields(GameState state, Player player) : List<(int r, int c)> 
+  }
+
+  interface IGameResultProvider {
+    + IsGameOver(GameState state) : bool
+    + GetWinner (GameState state) : Player
+  }
+
+  class EnclosureDetector {
+    + GetEnclosedFields(GameState state, Player player) : List<(int r, int c)> 
+  }
+
+  class GameResultProvider {
+    + IsGameOver(GameState state) : bool
+    + GetWinner (GameState state) : Player
+  }
+
+  }
+
+  package AI {
+
+  class MinMaxAIStrategy {
+    - IGameStateProcessor _gameStateProcessor
+    - IMoveGenerator _moveGenerator
+    - IStateEvaluator _stateEvaluator
+    + GetNextMove(GameState state) : Move
+    - MinMax(GameState state, int depth) : int
+  }
+
+  interface IAIStrategy {
+    + GetNextMove(GameState state) : Move
+  }
+
+  interface IMoveGenerator {
+    + GenerateMoves(GameState state) : List<Move>
+  }
+
+  interface IStateEvaluator {
+    + Evaluate(GameState state) : int
+  }
+
+  class MoveGenerator {
+    + GenerateMoves(GameState state) : List<Move>
+  }
+
+  class StateEvaluator {
+    - List<IHeuristic> _heuristics
+    + Evaluate(GameState state) : int
+  }
+
+  package Heuristics{
+
+  interface IHeuristic {
+    + Evaluate(GameState state) : int
+  }
+
+  class ScoreHeuristic {
+    + Evaluate(GameState state) : int
+  }
+
+  class GameOverHeuristic {
+    + Evaluate(GameState state) : int
+  }
+
+  }
+
+}
+
+}
+
+' ---------------------
+' Relationships
+' ---------------------
+
+GameController --> IGameService
+IGameService <|.. GameService
+GameService --> IGameRepository
+GameService --> IGameStateProcessor
+GameService ---> IAIStrategy
+GameService --> IMoveValidator
+IMoveValidator <|.. MoveValidator
+IAIStrategy <|.. MinMaxAIStrategy
+IGameStateProcessor <|... GameStateProcessor
+MinMaxAIStrategy --> IMoveGenerator
+MinMaxAIStrategy --> IStateEvaluator
+MinMaxAIStrategy --> IGameStateProcessor
+IMoveGenerator <|.. MoveGenerator
+IStateEvaluator <|.. StateEvaluator
+StateEvaluator "1" --> "0..*" IHeuristic 
+IHeuristic <|.. ScoreHeuristic
+IHeuristic <|.. GameOverHeuristic
+GameStateProcessor --> IEnclosureDetector
+GameStateProcessor --> IGameResultProvider
+IEnclosureDetector <|.. EnclosureDetector
+IGameResultProvider <|.. GameResultProvider
+IGameRepository <|.. InMemoryGameRepository
+
+@enduml

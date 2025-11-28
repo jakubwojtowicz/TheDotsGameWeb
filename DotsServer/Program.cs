@@ -4,6 +4,7 @@ using DotsWebApi.Repositories;
 using DotsWebApi.Services.AI;
 using Serilog;
 using DotsWebApi.Services.AI.Heuristics;
+using DotsWebApi.Services.StateProcessors;
 
 var builder = WebApplication.CreateBuilder(args);
 
