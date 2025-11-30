@@ -11,8 +11,8 @@ public interface IGameService
 {
     string CreateGame(int boardSize, Player startingPlayer = Player.Human);
     GameState GetGameState(string gameId);
-    GameState MakeMove(string gameId, MoveDto moveDto);
-    GameState MakeAIMove(string gameId);
+    Task<GameState> MakeMoveAsync(string gameId, MoveDto moveDto);
+    Task<GameState> MakeAIMoveAsync(string gameId);
 }
 
 public class GameService : IGameService
@@ -48,7 +48,7 @@ public class GameService : IGameService
         return state;
     }
 
-    public GameState MakeMove(string gameId, MoveDto moveDto)
+    public async Task<GameState> MakeMoveAsync(string gameId, MoveDto moveDto)
     {
         var state = _gameRepository.Get(gameId);
 
@@ -62,13 +62,15 @@ public class GameService : IGameService
         if (!validation.IsValid)
             throw new InvalidMoveException(validation.Message);
 
-        var newState = _gameStateProcessor.GetNextState(state, move);
+        var newState = await Task.Run(() =>  
+            _gameStateProcessor.GetNextState(state, move));
+
         _gameRepository.Update(gameId, newState);
 
-        return newState;
+        return await Task.FromResult(newState);
     }
 
-    public GameState MakeAIMove(string gameId)
+    public async Task<GameState> MakeAIMoveAsync(string gameId)
     {
         var state = _gameRepository.Get(gameId);
 
@@ -80,9 +82,12 @@ public class GameService : IGameService
         if (state.CurrentPlayer != Player.AI)
             throw new InvalidOperationException("It's not AI's turn to play.");
 
-        var move = _aIStrategy.GetNextMove(state);
+        var newState = await Task.Run(() =>
+        {
+            var move = _aIStrategy.GetNextMove(state);
+            return _gameStateProcessor.GetNextState(state, move);
+        });
 
-        var newState = _gameStateProcessor.GetNextState(state, move);
         _gameRepository.Update(gameId, newState);
 
         return newState;

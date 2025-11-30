@@ -9,7 +9,7 @@ namespace DotsWebApi.Controllers;
 [Route("api/game")]
 public class GameController: ControllerBase
 {
-    IGameService _gameService;
+    private readonly IGameService _gameService;
 
     public GameController(IGameService gameService)
     {
@@ -31,16 +31,16 @@ public class GameController: ControllerBase
     }
 
     [HttpPut("{id:guid}/make-move")]
-    public ActionResult<GameState> MakeMove(string id, MoveDto move)
+    public async Task<ActionResult<GameState>> MakeMove(string id, MoveDto move)
     {
-        var state = _gameService.MakeMove(id, move);
+        var state = await _gameService.MakeMoveAsync(id, move);
         return Ok(state);
     }
 
     [HttpPut("{id:guid}/make-ai-move")]
-    public ActionResult<GameState> MakeAIMove(string id)
+    public async Task<ActionResult<GameState>> MakeAIMove(string id)
     {
-        var state = _gameService.MakeAIMove(id);
+        var state = await _gameService.MakeAIMoveAsync(id);
         return Ok(state);
     }
 }
