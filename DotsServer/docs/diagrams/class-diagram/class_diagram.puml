@@ -176,6 +176,14 @@ package Services {
     + Evaluate(GameState state) : int
   }
 
+  class EnemyNeighboursHeuristics {
+    + Evaluate(GameState state) : int
+  }
+
+  class TerritoryHeuristic {
+    + Evaluate(GameState state) : int
+  }
+
   }
 
 }
@@ -203,6 +211,8 @@ IStateEvaluator <|.. StateEvaluator
 StateEvaluator "1" --> "0..*" IHeuristic 
 IHeuristic <|.. ScoreHeuristic
 IHeuristic <|.. GameOverHeuristic
+IHeuristic <|.. EnemyNeighboursHeuristics
+IHeuristic <|.. TerritoryHeuristic
 GameStateProcessor --> IEnclosureDetector
 GameStateProcessor --> IGameResultProvider
 IEnclosureDetector <|.. EnclosureDetector

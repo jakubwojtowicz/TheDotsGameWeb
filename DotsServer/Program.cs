@@ -8,6 +8,15 @@ using DotsWebApi.Services.StateProcessors;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -33,6 +42,8 @@ builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
 builder.Services.AddSingleton<IHeuristic, ScoreHeuristic>();
 builder.Services.AddSingleton<IHeuristic, GameOverHeuristic>();
+builder.Services.AddSingleton<IHeuristic, TerritoryHeuristic>();
+builder.Services.AddSingleton<IHeuristic, EnemyNeighboursHeuristic>();
 builder.Services.AddSingleton<IAIStrategy, MinMaxAIStrategy>();
 builder.Services.AddSingleton<IGameService, GameService>();
 
@@ -47,6 +58,7 @@ if (app.Environment.IsDevelopment())
 
 // Configure the HTTP request pipeline.
 app.UseErrorHandlingMiddleware();
+app.UseCors("AllowReact");
 app.MapControllers();
 
 app.Run();

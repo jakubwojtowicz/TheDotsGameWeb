@@ -5,7 +5,7 @@ namespace DotsWebApi.Services.AI.Heuristics;
 
 public class GameOverHeuristic : IHeuristic
 {
-    private readonly int weight = 1000000;
+    private readonly int weight = 10000000;
     public int Evaluate(GameState state)
     {
         if(state.Winner == Player.Human)
