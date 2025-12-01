@@ -1,0 +1,26 @@
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+/* Board container background styling */
+.board-container {
+  background: #16163d;          /* dark modern background */
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Grid */
+.board {
+  display: grid;
+  gap: 50px;
+
+  /* fallback */
+  grid-template-columns: repeat(10, 14px);
+
+  /* dynamic size */
+  grid-template-columns: repeat(var(--size), 50px);
+}
