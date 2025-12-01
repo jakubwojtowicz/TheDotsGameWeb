@@ -81,24 +81,18 @@ package Services {
     + MakeAIMove(string gameID) : GameState
   }
 
-  package StateProcessors{
+  package GameEngines{
 
-  interface IGameStateProcessor {
-    + GetNextState(GameState prevState, Move move) : GameState
+  interface IGameEngine {
+    + ApplyMove(GameState prevState, Move move) : GameState
+    + ValidateMove(GameState state, Move move) : MoveValidation
   }
 
-  interface IMoveValidator {
-    + GetMoveValidation(GameState state, Move move) : MoveValidation
-  }
-
-  class MoveValidator {
-    + GetMoveValidation(GameState state, Move move) : MoveValidation
-  }
-
-  class GameStateProcessor {
+  class GameEngine {
     - IEnclosureDetector _enclosureDetector
     - IGameResultProvider _gameResultProvider
-    + GetNextState(GameState prevState, Move move) : GameState
+    + ApplyMove(GameState prevState, Move move) : GameState
+    + ValidateMove(GameState state, Move move) : MoveValidation
   }
 
   interface IEnclosureDetector {
@@ -186,15 +180,13 @@ package Services {
 
 IGameService <|.. GameService
 GameService --> IGameRepository
-GameService --> IGameStateProcessor
+GameService -> IGameEngine
 GameService ---> IAIStrategy
-GameService --> IMoveValidator
-IMoveValidator <|.. MoveValidator
 IAIStrategy <|.. MinMaxAIStrategy
-IGameStateProcessor <|... GameStateProcessor
+IGameEngine <|.. GameEngine
 MinMaxAIStrategy --> IMoveGenerator
 MinMaxAIStrategy --> IStateEvaluator
-MinMaxAIStrategy --> IGameStateProcessor
+MinMaxAIStrategy -> IGameEngine
 IMoveGenerator <|.. MoveGenerator
 IStateEvaluator <|.. StateEvaluator
 StateEvaluator "1" --> "0..*" IHeuristic 
@@ -202,8 +194,8 @@ IHeuristic <|.. ScoreHeuristic
 IHeuristic <|.. GameOverHeuristic
 IHeuristic <|.. EnemyNeighboursHeuristics
 IHeuristic <|.. TerritoryHeuristic
-GameStateProcessor --> IEnclosureDetector
-GameStateProcessor --> IGameResultProvider
+GameEngine --> IEnclosureDetector
+GameEngine --> IGameResultProvider
 IEnclosureDetector <|.. EnclosureDetector
 IGameResultProvider <|.. GameResultProvider
 IGameRepository <|.. InMemoryGameRepository

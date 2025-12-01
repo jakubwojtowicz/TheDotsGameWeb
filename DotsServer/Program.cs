@@ -4,8 +4,8 @@ using DotsWebApi.Repositories;
 using DotsWebApi.Services.AI;
 using Serilog;
 using DotsWebApi.Services.AI.Heuristics;
-using DotsWebApi.Services.StateProcessors;
 using DotsWebApi.DTO;
+using DotsWebApi.Services.GameEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,11 +23,9 @@ builder.Services.AddSwaggerGen();
 // Register DI services
 builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
 builder.Services.AddSingleton<IEnclosureDetector, EnclosureDetector>();
-builder.Services.AddSingleton<IMoveValidator, MoveValidator>();
-builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
 builder.Services.AddSingleton<IMoveGenerator, MoveGenerator>();
 builder.Services.AddSingleton<IStateEvaluator, StateEvaluator>();
-builder.Services.AddSingleton<IGameStateProcessor, GameStateProcessor>();
+builder.Services.AddSingleton<IGameEngine, GameEngine>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
 builder.Services.AddSingleton<IHeuristic, ScoreHeuristic>();
 builder.Services.AddSingleton<IHeuristic, GameOverHeuristic>();

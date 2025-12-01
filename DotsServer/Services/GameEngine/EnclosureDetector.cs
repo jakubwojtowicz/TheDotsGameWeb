@@ -1,7 +1,7 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 
-namespace DotsWebApi.Services.StateProcessors;
+namespace DotsWebApi.Services.GameEngine;
 
 public interface IEnclosureDetector
 {

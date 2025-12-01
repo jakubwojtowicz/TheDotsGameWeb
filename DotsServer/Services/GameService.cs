@@ -4,7 +4,7 @@ using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services.AI;
 using DotsWebApi.Repositories;
-using DotsWebApi.Services.StateProcessors;
+using DotsWebApi.Services.GameEngine;
 namespace DotsWebApi.Services;
 
 public interface IGameService
@@ -18,18 +18,15 @@ public interface IGameService
 public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
-    private readonly IGameStateProcessor _gameStateProcessor;
+    private readonly IGameEngine _gameEngine;
     private readonly IAIStrategy _aIStrategy;
-    private readonly IMoveValidator _moveValidator;
-    public GameService(IGameStateProcessor gameStateProcessor, 
+    public GameService(IGameEngine gameEngine, 
         IAIStrategy aIStrategy, 
-        IGameRepository gameRepository, 
-        IMoveValidator moveValidator)
+        IGameRepository gameRepository)
     {
-        _gameStateProcessor = gameStateProcessor;
+        _gameEngine = gameEngine;
         _aIStrategy = aIStrategy;
         _gameRepository = gameRepository;
-        _moveValidator = moveValidator;
     }
     public string CreateGame(int boardSize, Player startingPlayer = Player.Human)
     {
@@ -57,13 +54,13 @@ public class GameService : IGameService
 
         var move = new Move { Player = Player.Human, X = moveDto.X, Y = moveDto.Y };
 
-        var validation = _moveValidator.GetMoveValidation(state, move);
+        var validation = _gameEngine.ValidateMove(state, move);
 
         if (!validation.IsValid)
             throw new InvalidMoveException(validation.Message);
 
         var newState = await Task.Run(() =>  
-            _gameStateProcessor.GetNextState(state, move));
+            _gameEngine.ApplyMove(state, move));
 
         _gameRepository.Update(gameId, newState);
 
@@ -85,7 +82,7 @@ public class GameService : IGameService
         var newState = await Task.Run(() =>
         {
             var move = _aIStrategy.GetNextMove(state);
-            return _gameStateProcessor.GetNextState(state, move);
+            return _gameEngine.ApplyMove(state, move);
         });
 
         _gameRepository.Update(gameId, newState);
