@@ -44,16 +44,6 @@ package Model {
 
 }
 
-package Controllers {
-  class GameController {
-    - IGameService _gameService
-    + CreateGame(int boardSize, Player startingPlayer) : GameState
-    + GetById(string gameId, MoveDto move) : GameState
-    + MakeMove(string gameID) : GameState
-    + MakeAIMove(string gameID) : GameState
-  }
-}
-
 package Repositories {
   interface IGameRepository {
     + Add (string id, GameState state) : void
@@ -194,7 +184,6 @@ package Services {
 ' Relationships
 ' ---------------------
 
-GameController --> IGameService
 IGameService <|.. GameService
 GameService --> IGameRepository
 GameService --> IGameStateProcessor

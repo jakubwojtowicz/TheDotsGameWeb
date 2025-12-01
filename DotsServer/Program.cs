@@ -5,17 +5,9 @@ using DotsWebApi.Services.AI;
 using Serilog;
 using DotsWebApi.Services.AI.Heuristics;
 using DotsWebApi.Services.StateProcessors;
+using DotsWebApi.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowReact",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
-
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -27,9 +19,6 @@ builder.Host.UseSerilog();
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Add Controllers
-builder.Services.AddControllers();
 
 // Register DI services
 builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
@@ -56,9 +45,38 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DotsServer API v1"));
 }
 
+//Minimal api endpoints
+
+var gameApi = app.MapGroup("/api/game");
+
+gameApi.MapPost("/new", (int boardSize, IGameService gameService) =>
+{
+    var id = gameService.CreateGame(boardSize);
+    var state = gameService.GetGameState(id);
+    return Results.Created($"/api/game/{id}", state);
+});
+
+gameApi.MapGet("/{id:guid}", (string id, IGameService gameService) =>
+{
+    var state = gameService.GetGameState(id);
+    return Results.Ok(state);
+});
+
+gameApi.MapPut("/{id:guid}/make-move",
+    async (string id, MoveDto move, IGameService gameService) =>
+{
+    var state = await gameService.MakeMoveAsync(id, move);
+    return Results.Ok(state);
+});
+
+gameApi.MapPut("/{id:guid}/make-ai-move",
+    async (string id, IGameService gameService) =>
+{
+    var state = await gameService.MakeAIMoveAsync(id);
+    return Results.Ok(state);
+});
+
 // Configure the HTTP request pipeline.
 app.UseErrorHandlingMiddleware();
-app.UseCors("AllowReact");
-app.MapControllers();
 
 app.Run();
