@@ -72,7 +72,7 @@ package Services {
 
   class GameService {
     - IGameRepository _gameRepository
-    - IGameStateProcessor _gameStateProcessor
+    - IGameEngine _gameEngine
     - IAIStrategy _aiStrategy
     - IMoveValidator _moveValidator
     + CreateGame(int boardSize, Player startingPlayer) : GameState
@@ -118,7 +118,7 @@ package Services {
   package AI {
 
   class MinMaxAIStrategy {
-    - IGameStateProcessor _gameStateProcessor
+    - IGameEngine _gameEngine
     - IMoveGenerator _moveGenerator
     - IStateEvaluator _stateEvaluator
     + GetNextMove(GameState state) : Move
