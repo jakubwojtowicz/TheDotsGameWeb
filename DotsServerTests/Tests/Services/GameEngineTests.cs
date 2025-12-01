@@ -1,25 +1,26 @@
 ﻿using DotsWebApi.Model;         
 using DotsWebApi.Model.Enums;    
 using DotsWebApi.Services;
-using DotsWebApi.Services.StateProcessors;
+using DotsWebApi.Services.GameEngine;
+using DotsWebApiTests.Helpers;
 using Moq;
 using Xunit;
 
 namespace DotsServerTests.Tests.Services;
 
-public class GameStateProcessorTests
+public class GameEngineTests
 {
     private readonly Mock<IEnclosureDetector> _enclosureDetector = new();
     private readonly Mock<IGameResultProvider> _resultProvider = new();
-    private readonly GameStateProcessor _stateProcessor;
+    private readonly GameEngine _gameEngine;
 
-    public GameStateProcessorTests()
+    public GameEngineTests()
     {
-        _stateProcessor = new GameStateProcessor(_enclosureDetector.Object, _resultProvider.Object);
+        _gameEngine = new GameEngine(_enclosureDetector.Object, _resultProvider.Object);
     }
 
     [Fact]
-    public void GetNextState_HumanMove_ReturnsNewState()
+    public void ApplyMove_HumanMove_ReturnsNewState()
     {
         _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
@@ -47,7 +48,7 @@ public class GameStateProcessorTests
             Player = Player.Human
         };
 
-        var newState = _stateProcessor.GetNextState(state, move);
+        var newState = _gameEngine.ApplyMove(state, move);
 
         Assert.Equal(Player.AI, newState.CurrentPlayer);
         Assert.Equal(move, newState.LastMove);
@@ -56,7 +57,7 @@ public class GameStateProcessorTests
     }
 
     [Fact]
-    public void GetNextState_AIMove_ReturnsNewState()
+    public void ApplyMove_AIMove_ReturnsNewState()
     {
         _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
@@ -84,7 +85,7 @@ public class GameStateProcessorTests
             Player = Player.AI
         };
 
-        var newState = _stateProcessor.GetNextState(state, move);
+        var newState = _gameEngine.ApplyMove(state, move);
 
         Assert.Equal(Player.Human, newState.CurrentPlayer);
         Assert.Equal(move, newState.LastMove);
@@ -93,7 +94,7 @@ public class GameStateProcessorTests
     }
 
     [Fact]
-    public void GetNextState_LastMove_SetsGameEndedState()
+    public void ApplyMove_LastMove_SetsGameEndedState()
     {
         _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
@@ -121,7 +122,7 @@ public class GameStateProcessorTests
             Player = Player.Human
         };
 
-        var newState = _stateProcessor.GetNextState(state, move);
+        var newState = _gameEngine.ApplyMove(state, move);
 
         Assert.Equal(Player.None, newState.CurrentPlayer);
         Assert.True(newState.IsGameOver);
@@ -129,7 +130,7 @@ public class GameStateProcessorTests
     }
 
     [Fact]
-    public void GetNextState_MoveWithPoint_ApplyPointsAndUpdatesBoard()
+    public void ApplyMove_MoveWithPoint_ApplyPointsAndUpdatesBoard()
     {
         _enclosureDetector.Setup(r => r.GetEnclosedFields(
             It.IsAny<GameState>(), 
@@ -159,9 +160,124 @@ public class GameStateProcessorTests
             Player = Player.Human
         };
 
-        var newState = _stateProcessor.GetNextState(state, move);
+        var newState = _gameEngine.ApplyMove(state, move);
 
         Assert.Equal(1, newState.Scores[Player.Human]);
         Assert.Equal(Player.Human, newState.Board[1][1].EnclosedBy);
+    }
+
+        [Fact]
+    public void ValidateMove_ValidMove_ReturnsValid()
+    {
+        var state = new GameState(3, Player.Human);
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.True(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateMove_WrongPlayer_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.AI,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateMove_GameEnded_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+        state.IsGameOver = true;
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateMove_OutOfBounds_ReturnsInvalid()
+    {
+        var state = new GameState(3, Player.Human);
+        state.IsGameOver = false;
+
+        var move = new Move
+        {
+            X = 50000,
+            Y = -10,
+            Player = Player.Human,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void ValidateMove_CellOccupied_ReturnsInvalid()
+    {
+        var state = BoardFactory.Create(
+            "N A N",
+            "N N N",
+            "N N N"
+        );
+
+        var move = new Move
+        {
+            X = 0,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.False(validation.IsValid);
+    }
+
+    
+    [Fact]
+    public void ValidateMove_CellEnclosed_ReturnsInvalid()
+    {
+        var state = BoardFactory.Create(
+            "E A H",
+            "A E A",
+            "H A H"
+        );
+
+        state.Board[1][1].EnclosedBy = Player.AI;
+
+        var move = new Move
+        {
+            X = 1,
+            Y = 1,
+            Player = Player.Human,
+        };
+
+        var validation = _gameEngine.ValidateMove(state, move);
+
+        Assert.False(validation.IsValid);
     }
 }

@@ -1,7 +1,7 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
 using DotsWebApi.Services;
-using DotsWebApi.Services.StateProcessors;
+using DotsWebApi.Services.GameEngine;
 using DotsWebApiTests.Helpers;
 
 namespace DotsServerTests.Tests.Services;

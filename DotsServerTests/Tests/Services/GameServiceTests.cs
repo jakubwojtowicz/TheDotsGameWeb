@@ -7,25 +7,24 @@ using DotsWebApi.DTO;
 using DotsWebApi.Services.AI;
 using Xunit;
 using Moq;
-using DotsWebApi.Services.StateProcessors;
+using DotsWebApi.Services.GameEngine;
+using System.Threading.Tasks;
 
 namespace DotsServerTests.Tests.Services;
 
 public class GameServiceTests
 {
-    private readonly Mock<IGameStateProcessor> _gameStateProcessor = new();
+    private readonly Mock<IGameEngine> _gameEngine = new();
     private readonly Mock<IAIStrategy> _aiStrategy = new();
     private readonly Mock<IGameRepository> _gameRepository = new();
-    private readonly Mock<IMoveValidator> _moveValidator = new();
 
     private readonly GameService _gameService;
 
     public GameServiceTests()
     {
-        _gameService = new GameService(_gameStateProcessor.Object,
+        _gameService = new GameService(_gameEngine.Object,
             _aiStrategy.Object, 
-            _gameRepository.Object, 
-            _moveValidator.Object);
+            _gameRepository.Object);
     }
 
     [Fact]
@@ -69,7 +68,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void MakeMove_ValidMove_ReturnsUpdatedState()
+    public async Task MakeMove_ValidMove_ReturnsUpdatedStateAsync()
     {
         var gameId = "game123";
         var initialState = new GameState(3, Player.Human);
@@ -77,7 +76,7 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initialState);
 
-        _moveValidator.Setup(r => r.GetMoveValidation(
+        _gameEngine.Setup(r => r.ValidateMove(
             It.IsAny<GameState>(), 
             It.IsAny<Move>()))
             .Returns(new MoveValidation { IsValid = true });
@@ -87,7 +86,7 @@ public class GameServiceTests
         newState.CurrentPlayer = Player.AI;
         newState.LastMove = new Move { Player = Player.Human, X = 0, Y = 0 };
 
-        _gameStateProcessor.Setup(r => r.GetNextState(initialState, 
+        _gameEngine.Setup(r => r.ApplyMove(initialState, 
             It.Is<Move>(m => m.X == 0 && m.Y == 0)))
             .Returns(newState);
 
@@ -95,7 +94,7 @@ public class GameServiceTests
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
-        var returnedState = _gameService.MakeMove(gameId, dto);
+        var returnedState = await _gameService.MakeMoveAsync(gameId, dto);
 
         Assert.Equal(Player.Human, returnedState.Board[0][0].Player);
         Assert.Equal(Player.AI, returnedState.CurrentPlayer);
@@ -105,7 +104,7 @@ public class GameServiceTests
     }
 
     [Fact]
-    public void MakeMove_InvalidMove_ThrowsException()
+    public async Task MakeMove_InvalidMove_ThrowsException()
     {
         var gameId = "game123";
         var initialState = new GameState(3, Player.Human);
@@ -113,18 +112,18 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initialState);
 
-        _moveValidator.Setup(r => r.GetMoveValidation(
+        _gameEngine.Setup(r => r.ValidateMove(
             It.IsAny<GameState>(), 
             It.IsAny<Move>()))
             .Returns(new MoveValidation { IsValid = false, Message = "Invalid move." });
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
-        Assert.Throws<InvalidMoveException>(() => _gameService.MakeMove(gameId, dto));
+        await Assert.ThrowsAsync<InvalidMoveException>(() => _gameService.MakeMoveAsync(gameId, dto));
     }
 
     [Fact]
-    public void MakeMove_InvalidGameId_ThrowsException()
+    public async Task MakeMove_InvalidGameId_ThrowsException()
     {
         var gameId = "game123";
 
@@ -133,44 +132,44 @@ public class GameServiceTests
 
         var dto = new MoveDto { X = 0, Y = 0 };
 
-        Assert.Throws<GameNotFoundException>(() => _gameService.MakeMove(gameId, dto));
+        await Assert.ThrowsAsync<GameNotFoundException>(() => _gameService.MakeMoveAsync(gameId, dto));
     }
 
     [Fact]
-    public void MakeAIMove_InvalidGameId_ThrowsException()
+    public async Task MakeAIMove_InvalidGameId_ThrowsException()
     {
         var gameId = "game123";
 
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(() => null);
 
-        Assert.Throws<GameNotFoundException>(() => _gameService.MakeAIMove(gameId));
+        await Assert.ThrowsAsync<GameNotFoundException>(() => _gameService.MakeAIMoveAsync(gameId));
     }
 
     [Fact]
-    public void MakeAIMove_GameOver_ThrowsException()
+    public async Task MakeAIMove_GameOver_ThrowsExceptionAsync()
     {
         var gameId = "game123";
 
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(new GameState(3, Player.Human){IsGameOver = true});
 
-        Assert.Throws<InvalidOperationException>(() => _gameService.MakeAIMove(gameId));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _gameService.MakeAIMoveAsync(gameId));
     }
 
     [Fact]
-    public void MakeAIMove_HumanTurn_ThrowsException()
+    public async Task MakeAIMove_HumanTurn_ThrowsException()
     {
         var gameId = "game123";
 
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(new GameState(3, Player.Human){IsGameOver = false, CurrentPlayer = Player.Human});
 
-        Assert.Throws<InvalidOperationException>(() => _gameService.MakeAIMove(gameId));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _gameService.MakeAIMoveAsync(gameId));
     }
 
     [Fact]
-    public void MakeAIMove_ValidGame_ReturnsNewState()
+    public async Task MakeAIMove_ValidGame_ReturnsNewStateAsync()
     {
         var gameId = "game123";
 
@@ -189,10 +188,10 @@ public class GameServiceTests
         _gameRepository.Setup(r => r.Get(gameId))
             .Returns(initState);
 
-        _gameStateProcessor.Setup(r => r.GetNextState(initState, aiMove))
+        _gameEngine.Setup(r => r.ApplyMove(initState, aiMove))
             .Returns(newState);
 
-        var returnedState = _gameService.MakeAIMove(gameId);
+        var returnedState = await _gameService.MakeAIMoveAsync(gameId);
 
         Assert.Equal(Player.AI, returnedState.Board[0][0].Player);
         Assert.Equal(Player.Human, returnedState.CurrentPlayer);
