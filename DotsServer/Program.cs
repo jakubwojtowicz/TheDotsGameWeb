@@ -9,6 +9,17 @@ using DotsWebApi.Services.GameEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost",
+        policy => policy
+            .WithOrigins("http://localhost:3000") // allow React app
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithExposedHeaders("Location")
+    );
+});
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -37,6 +48,8 @@ builder.Services.AddTransient<IAIStrategy, MinMaxAIStrategy>();
 builder.Services.AddScoped<IGameService, GameService>();
 
 var app = builder.Build();
+
+app.UseCors("AllowLocalhost");
 
 // Enable Swagger
 if (app.Environment.IsDevelopment())
