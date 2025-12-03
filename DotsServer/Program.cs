@@ -22,17 +22,19 @@ builder.Services.AddSwaggerGen();
 
 // Register DI services
 builder.Services.AddSingleton<IGameResultProvider, GameResultProvider>();
-builder.Services.AddSingleton<IEnclosureDetector, EnclosureDetector>();
-builder.Services.AddSingleton<IMoveGenerator, MoveGenerator>();
-builder.Services.AddSingleton<IStateEvaluator, StateEvaluator>();
-builder.Services.AddSingleton<IGameEngine, GameEngine>();
 builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
 builder.Services.AddSingleton<IHeuristic, ScoreHeuristic>();
 builder.Services.AddSingleton<IHeuristic, GameOverHeuristic>();
 builder.Services.AddSingleton<IHeuristic, TerritoryHeuristic>();
 builder.Services.AddSingleton<IHeuristic, EnemyNeighboursHeuristic>();
-builder.Services.AddSingleton<IAIStrategy, MinMaxAIStrategy>();
-builder.Services.AddSingleton<IGameService, GameService>();
+
+builder.Services.AddTransient<IEnclosureDetector, EnclosureDetector>();
+builder.Services.AddTransient<IMoveGenerator, MoveGenerator>();
+builder.Services.AddTransient<IStateEvaluator, StateEvaluator>();
+builder.Services.AddTransient<IGameEngine, GameEngine>();
+builder.Services.AddTransient<IAIStrategy, MinMaxAIStrategy>();
+
+builder.Services.AddScoped<IGameService, GameService>();
 
 var app = builder.Build();
 
