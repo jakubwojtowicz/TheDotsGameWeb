@@ -1,9 +1,101 @@
-.App {
+/* MAIN WRAPPER */
+.app-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;      /* center horizontally */
-  justify-content: center;  /* center vertically */
-  min-height: 100vh;        /* full viewport height */
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+  align-items: center;
+  padding: 30px;
+  color: #e6e6ff;
+
+  /* background gradient for the whole app */
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d0d2b, #1a1a40);
+  position: relative;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+/* subtle animated stars/particles */
+.app-wrapper::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(#ffffff22 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  animation: starShift 60s linear infinite;
+  z-index: 0;
+}
+
+@keyframes starShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 200px 200px; }
+}
+
+/* HEADER CONTAINER */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: all 0.3s ease;
+  position: relative; /* ensure above star background */
+  z-index: 1;
+}
+
+/* BEFORE GAME — centered on page */
+.header-initial {
+  align-items: center;
+  margin-top: 120px;
+}
+
+/* AFTER GAME — pinned to top-left */
+.header-started {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+/* Title styling */
+.app-title {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 0;
+  color: #7fa6ff;
+  text-shadow:
+    0 0 8px rgba(127, 166, 255, 0.6),
+    0 0 14px rgba(80, 120, 255, 0.4);
+}
+
+/* BUTTON */
+.new-game-btn {
+  padding: 12px 26px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #3c63ff, #6f8dff);
+  color: white;
+  cursor: pointer;
+  box-shadow:
+    0 0 6px rgba(80, 120, 255, 0.6),
+    0 0 16px rgba(80, 120, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.new-game-btn:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 10px rgba(130, 160, 255, 0.8),
+    0 0 22px rgba(110, 140, 255, 0.6);
+}
+
+.new-game-btn:disabled {
+  background: #3c3c7a;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }

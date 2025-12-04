@@ -1,0 +1,86 @@
+/* Full-screen overlay */
+.game-over-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
+/* Modal container */
+.game-over-modal-container {
+  background: #0f0f33;               /* match board background */
+  padding: 30px 40px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow:
+    0 0 12px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(44, 90, 255, 0.3); /* subtle neon glow */
+  min-width: 520px;
+  min-height: 250px;
+
+  animation: fadeInScale 0.25s ease-out;
+}
+
+/* Winner text */
+.game-over-modal-container h2 {
+  margin-bottom: 20px;
+  font-size: 64px;
+  color: #e6e6ff;
+  text-shadow:
+    0 0 6px rgba(141, 143, 146, 0.6),
+    0 0 12px rgba(80, 120, 255, 0.4);
+}
+
+/* Highlight winner color */
+.game-over-modal-container h2.winner-human {
+  color: #4aa3ff;
+  text-shadow: 0 0 8px rgba(74, 163, 255, 0.6);
+}
+
+.game-over-modal-container h2.winner-ai {
+  color: #ff5b5b;
+  text-shadow: 0 0 8px rgba(255, 91, 91, 0.6);
+}
+
+/* New Game button inside modal */
+.game-over-modal-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #3c63ff, #6f8dff);
+  color: white;
+  box-shadow:
+    0 0 6px rgba(80, 120, 255, 0.6),
+    0 0 16px rgba(80, 120, 255, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.game-over-modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 10px rgba(130, 160, 255, 0.8),
+    0 0 22px rgba(110, 140, 255, 0.6);
+}
+
+/* Optional animation */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
