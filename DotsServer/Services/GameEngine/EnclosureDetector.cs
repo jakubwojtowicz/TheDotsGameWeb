@@ -46,7 +46,8 @@ public class EnclosureDetector: IEnclosureDetector
                     int nr = cr + dr, nc = cc + dc;
                     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
                     if (visited[nr, nc]) continue;
-                    if (state.Board[nr][nc].Player != player && state.Board[nr][nc].EnclosedBy != player)
+                    if ((state.Board[nr][nc].Player != player && state.Board[nr][nc].EnclosedBy != player) ||
+                        (state.Board[nr][nc].Player == player && state.Board[nr][nc].EnclosedBy != Player.None))
                     {
                         visited[nr, nc] = true;
                         q.Enqueue((nr, nc));
