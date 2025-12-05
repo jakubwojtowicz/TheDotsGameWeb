@@ -1,7 +1,7 @@
 import { GameState, MoveDto } from "../types/dotsApiTypes";
 import { NewGameResult } from "../types/helperTypes";
 
-const BASE_URL = "http://localhost:5158";
+const BASE_URL = process.env.REACT_APP_API_URL!;
 
 
 export async function createNewGame(boardSize: number): Promise<NewGameResult> {
