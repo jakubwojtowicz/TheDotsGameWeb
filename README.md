@@ -81,8 +81,8 @@ The app will open at http://localhost:3000
 The backend project contains additional documentation describing the structure and logic of the game:
 
 - **[Game Rules — rules.md](DotsServer/Docs/rules.md)**  
-- **Backend class Diagram:**  
-  ![Class Diagram](DotsServer/Docs/diagrams/class-diagram/out/class_diagram.png)
+- **Backend class Diagram:**
+<img width="2645" height="1642" alt="class_diagram" src="https://github.com/user-attachments/assets/4217af86-ca6d-4922-9a1d-2a8f631ca06c" />
 
 ## 🎮 Gameplay
 
