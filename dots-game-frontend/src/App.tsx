@@ -19,7 +19,7 @@ export default function App() {
         onClick={() => newGame()}
         disabled={loading}
       >
-        {loading ? "Creating..." : "New Game"}
+        New Game
       </button>
     </div>
 
