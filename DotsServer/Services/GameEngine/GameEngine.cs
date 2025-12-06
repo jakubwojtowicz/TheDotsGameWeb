@@ -7,7 +7,7 @@ namespace DotsWebApi.Services.GameEngine;
 public interface IGameEngine
 { 
     public GameState ApplyMove(GameState prevState, Move move);
-    public UndoMoveData ApplyMoveWithUndo(GameState prevState, Move move);
+    public UndoMoveData ApplyMoveInPlace(GameState prevState, Move move);
     public void UndoMove(GameState state, UndoMoveData undo);
     public MoveValidation ValidateMove(GameState state, Move move);
 }
@@ -51,7 +51,7 @@ public class GameEngine : IGameEngine
         return newState;
     }
 
-    public UndoMoveData ApplyMoveWithUndo(GameState state, Move move)
+    public UndoMoveData ApplyMoveInPlace(GameState state, Move move)
     {
         var undoMoveData = new UndoMoveData
         {

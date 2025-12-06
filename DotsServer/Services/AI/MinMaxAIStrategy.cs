@@ -68,7 +68,7 @@ public class MinMaxAIStrategy : IAIStrategy
 
             foreach (var move in moves)
             {
-                var undo = _gameEngine.ApplyMoveWithUndo(state, move);
+                var undo = _gameEngine.ApplyMoveInPlace(state, move);
 
                 int eval = MinMax(
                     state,
@@ -95,7 +95,7 @@ public class MinMaxAIStrategy : IAIStrategy
 
             foreach (var move in moves)
             {
-                var undo = _gameEngine.ApplyMoveWithUndo(state, move);
+                var undo = _gameEngine.ApplyMoveInPlace(state, move);
 
                 int eval = MinMax(
                     state,
