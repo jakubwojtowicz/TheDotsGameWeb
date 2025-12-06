@@ -1,11 +1,14 @@
 using DotsWebApi.Model;
 using DotsWebApi.Model.Enums;
+using DotsWebApi.Model.Helpers;
 
 namespace DotsWebApi.Services.GameEngine;
 
 public interface IGameEngine
 { 
     public GameState ApplyMove(GameState prevState, Move move);
+    public UndoMoveData ApplyMoveWithUndo(GameState prevState, Move move);
+    public void UndoMove(GameState state, UndoMoveData undo);
     public MoveValidation ValidateMove(GameState state, Move move);
 }
 
@@ -46,6 +49,60 @@ public class GameEngine : IGameEngine
         }
 
         return newState;
+    }
+
+    public UndoMoveData ApplyMoveWithUndo(GameState state, Move move)
+    {
+        var undoMoveData = new UndoMoveData
+        {
+            PreviousCurrentPlayer = state.CurrentPlayer,
+            PreviousIsGameOver = state.IsGameOver,
+            PreviousWinner = state.Winner,
+            PreviousScores = new Dictionary<Player, int>(state.Scores)
+        };
+        
+        var targetField = state.Board[move.X][move.Y];
+        undoMoveData.ChangedFields.Add((move.X, move.Y, targetField.Player, targetField.EnclosedBy));
+        state.Board[move.X][move.Y].Player = move.Player;
+        state.CurrentPlayer = move.Player == Player.Human ? Player.AI : Player.Human;
+        state.LastMove = move;
+
+        var enclosed = _enclosureDetector.GetEnclosedFields(state, move.Player);
+
+        if(enclosed.Count > 0){
+            foreach (var (r, c) in enclosed)
+            {
+                if(state.Board[r][c].Player != Player.None)
+                    state.Scores[move.Player] += 1;
+                var changedField = state.Board[r][c];
+                undoMoveData.ChangedFields.Add((r, c, changedField.Player, changedField.EnclosedBy));
+                state.Board[r][c].EnclosedBy = move.Player;
+            }
+        }
+
+        state.IsGameOver = _gameResultProvider.IsGameOver(state);
+
+        if (state.IsGameOver){
+            state.CurrentPlayer = Player.None;
+            state.Winner = _gameResultProvider.GetWinner(state);
+        }
+
+        return undoMoveData;
+    }
+
+    public void UndoMove(GameState state, UndoMoveData undo)
+    {
+        foreach (var (r, c, prevPlayer, prevEnclosedBy) in undo.ChangedFields)
+        {
+            state.Board[r][c].Player = prevPlayer;
+            state.Board[r][c].EnclosedBy = prevEnclosedBy;
+        }
+
+        state.CurrentPlayer = undo.PreviousCurrentPlayer;
+        state.IsGameOver = undo.PreviousIsGameOver;
+        state.Winner = undo.PreviousWinner;
+        state.Scores[Player.Human] = undo.PreviousScores[Player.Human];
+        state.Scores[Player.AI] = undo.PreviousScores[Player.AI];
     }
 
     public MoveValidation ValidateMove(GameState state, Move move)

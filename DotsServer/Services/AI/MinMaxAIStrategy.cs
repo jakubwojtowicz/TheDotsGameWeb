@@ -11,33 +11,47 @@ public class MinMaxAIStrategy : IAIStrategy
     private readonly IGameEngine _gameEngine;
     private readonly IMoveGenerator _moveGenerator;
     private readonly IStateEvaluator _stateEvaluator;
+    private readonly ILogger<MinMaxAIStrategy> _logger;
 
-    public MinMaxAIStrategy(IGameEngine gameEngine, IMoveGenerator moveGenerator, IStateEvaluator stateEvaluator)
+    public MinMaxAIStrategy(IGameEngine gameEngine, IMoveGenerator moveGenerator, IStateEvaluator stateEvaluator, ILogger<MinMaxAIStrategy> logger)
     {
         _gameEngine = gameEngine;
         _moveGenerator = moveGenerator;
         _stateEvaluator = stateEvaluator;
+        _logger = logger;
     }
 
     public Move GetNextMove(GameState state)
     {
+        var start_time = DateTime.Now;
+
         int bestScore = int.MinValue;
         Move bestMove = new Move();
+        object lockObj = new object();
 
         var moves = _moveGenerator.GenerateMoves(state);
 
-        foreach (var move in moves)
+        Parallel.ForEach(moves, move =>
         {
             var stateAfterAI = _gameEngine.ApplyMove(state, move);
 
-            var moveScore = MinMax(stateAfterAI, 3, int.MinValue, int.MaxValue);
+            int moveScore = MinMax(stateAfterAI, 3, int.MinValue, int.MaxValue);
 
-            if (moveScore >= bestScore)
+            lock (lockObj)
             {
-                bestScore = moveScore;
-                bestMove = move;
+                _logger.LogInformation($"Move: {move.X}, {move.Y} score: {moveScore}");
+
+                if (moveScore > bestScore)
+                {
+                    bestScore = moveScore;
+                    bestMove = move;
+                }
             }
-        }
+        });
+
+        var elapsed_time = (DateTime.Now - start_time).TotalSeconds;
+
+        _logger.LogInformation($"MiniMax calculated best move in {elapsed_time} seconds.");
 
         return bestMove;
     }
@@ -54,12 +68,16 @@ public class MinMaxAIStrategy : IAIStrategy
 
             foreach (var move in moves)
             {
+                var undo = _gameEngine.ApplyMoveWithUndo(state, move);
+
                 int eval = MinMax(
-                    _gameEngine.ApplyMove(state, move),
+                    state,
                     depth - 1,
                     alpha,
                     beta
                 );
+
+                _gameEngine.UndoMove(state, undo);
 
                 maxEval = Math.Max(eval, maxEval);
                 alpha = Math.Max(alpha, eval);
@@ -77,12 +95,16 @@ public class MinMaxAIStrategy : IAIStrategy
 
             foreach (var move in moves)
             {
+                var undo = _gameEngine.ApplyMoveWithUndo(state, move);
+
                 int eval = MinMax(
-                    _gameEngine.ApplyMove(state, move),
+                    state,
                     depth - 1,
                     alpha,
                     beta
                 );
+
+                _gameEngine.UndoMove(state, undo);
 
                 minEval = Math.Min(minEval, eval);
                 beta = Math.Min(beta, eval);
